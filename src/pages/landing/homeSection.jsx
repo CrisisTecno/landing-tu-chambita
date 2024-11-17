@@ -117,6 +117,7 @@ const HeroSection = () => {
         {/* Imagen */}
         <img
           src="/src/assets/imgs/full20.png" // Reemplaza con la ruta de tu imagen
+          
           alt="TuChambita Hero"
           style={{
             maxWidth: "50vw", // Tamaño máximo de la imagen
