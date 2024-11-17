@@ -18,7 +18,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import colors from "../../theme/colors";
-
+import logo1 from "../../../public/assets/banner.png";
 const Navbar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("#home");
@@ -64,7 +64,7 @@ const Navbar = () => {
           {/* Logo */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <img
-              src="/assets/banner.png" // Reemplaza con la ruta de tu logo
+                src={logo1}// Reemplaza con la ruta de tu logo
               alt="Everes Logo"
               style={{ height: 50, width: 100, marginRight: 20 }}
             />

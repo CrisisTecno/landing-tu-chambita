@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Button, TextField } from "@mui/material";
 import colors from "../../theme/colors"; // Asegúrate de tener configurado tu archivo de colores
+import full20 from "../../../public/assets/imgs/full20.png";
 import ProfileCard from "../../components/landing/cardPerson";
 const HeroSection = () => {
   return (
@@ -116,7 +117,7 @@ const HeroSection = () => {
       >
         {/* Imagen */}
         <img
-          src="/assets/imgs/full20.png" 
+           src={full20}
           alt="TuChambita Hero"
           style={{
             maxWidth: "50vw", // Tamaño máximo de la imagen
