@@ -64,7 +64,7 @@ const Navbar = () => {
           {/* Logo */}
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <img
-              src="src/assets/banner.png" // Reemplaza con la ruta de tu logo
+              src="/assets/banner.png" // Reemplaza con la ruta de tu logo
               alt="Everes Logo"
               style={{ height: 50, width: 100, marginRight: 20 }}
             />

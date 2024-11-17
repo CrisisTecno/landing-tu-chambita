@@ -116,8 +116,7 @@ const HeroSection = () => {
       >
         {/* Imagen */}
         <img
-          src="src/assets/imgs/full20.png" // Reemplaza con la ruta de tu imagen
-          
+          src="/assets/imgs/full20.png" 
           alt="TuChambita Hero"
           style={{
             maxWidth: "50vw", // Tamaño máximo de la imagen
@@ -137,7 +136,7 @@ const HeroSection = () => {
           left: 0,
           width: "100%",
           height: "100%",
-          background: `url('src/assets/tuchambita-background.svg') no-repeat center/cover`,
+          background: `url('/assets/tuchambita-background.svg') no-repeat center/cover`,
           zIndex: 1,
           opacity: 0.1, // Ajusta la opacidad si es necesario
         }}
