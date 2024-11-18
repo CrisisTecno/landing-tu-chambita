@@ -4,6 +4,7 @@ import HeroSection from "./homeSection";
 import ProfileCard from "../../components/landing/cardPerson";
 import Footer from "../../components/landing/footer";
 import FAQ from "../../components/landing/fag";
+import Services from "../../components/landing/services";
 import Features from "../../components/landing/features";
 import PromotionalBanner from "../../components/landing/promotionBanner";
 import img69 from "../../../public/assets/imgs/img69.png";
@@ -24,7 +25,7 @@ const LandingPage = () => {
       >
         {/* Sección Home */}
         <section
-          id="home"
+          id="incio"
           style={{
             position: "relative",
             background: "#f3f4f6",
@@ -49,7 +50,7 @@ const LandingPage = () => {
         {/* Sección Services */}
         <section>
           <section
-            id="services"
+            id="caracteristicas"
             style={{
               background: "#FFF",
               position: "relative",
@@ -98,10 +99,11 @@ const LandingPage = () => {
             />
         
         </section>
-        <section id="contact" style={{ background: "#f3f4f6", width: "100%" }}>
-          <h1>Contact Section</h1>
+        <section id="servicios" style={{ background: "#f3f4f6", width: "100%" }}>
+        
+        <Services />
         </section>
-        <section id="fag" style={{ background: "#f3f4f6", width: "100%" }}>
+        <section id="preguntas" style={{ background: "#f3f4f6", width: "100%" }}>
           <FAQ />
         </section>
         <Footer />

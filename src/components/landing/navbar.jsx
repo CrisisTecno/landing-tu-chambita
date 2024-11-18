@@ -20,10 +20,11 @@ const Navbar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const navLinks = [
-    { label: "Home", href: "#home" },
-    { label: "Services", href: "#services" },
-    { label: "Teams", href: "#teams" },
-    { label: "Contact US", href: "#contact" },
+    { label: "Inicio", href: "#incio" },
+    { label: "Caracteristicas ", href: "#caracteristicas" },
+    { label: "Nuestros Servicios", href: "#servicios" },
+    { label: "Preguntas", href: "#preguntas" },
+
   ];
 
   const [activeLink, setActiveLink] = useState("#home");

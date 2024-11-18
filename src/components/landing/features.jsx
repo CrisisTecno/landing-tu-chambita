@@ -21,7 +21,7 @@ const Features = () => {
       ),
       title: "Pagos protegidos siempre",
       description:
-        "Nuestro personal a sido previamente calificado y comprobado por lo cual tuChambita garantiza la seguridad en los pagos.",
+        "Nuestro personal ha sido previamente calificado, y TuChambita garantiza la seguridad en los pagos.",
     },
     {
       icon: (
@@ -29,7 +29,7 @@ const Features = () => {
       ),
       title: "Trabajo de calidad garantizada",
       description:
-        "Encuentra al profesionales previamente selecccionados adecuado para comenzar tu proyecto con rapidez y excelencia.",
+        "Encuentra profesionales previamente seleccionados para comenzar tu proyecto con rapidez y excelencia.",
     },
   ];
 
@@ -51,7 +51,7 @@ const Features = () => {
           marginBottom: 3,
         }}
       >
-        Que ofrece TuChambita?
+        ¿Qué ofrece TuChambita?
       </Typography>
       <Typography
         variant="body1"
@@ -88,14 +88,10 @@ const Features = () => {
               elevation={3}
               sx={{
                 padding: 4,
-                borderRadius: "12px",
+                borderRadius: "16px", // Mejora la apariencia de las tarjetas
                 backgroundColor: "#fff",
                 textAlign: "center",
-                "&:hover": {
-                  backgroundColor: colors.primary.main,
-                  color: "#fff",
-                  "& svg": { color: "#fff" },
-                },
+                
               }}
             >
               {/* Ícono */}
