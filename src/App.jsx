@@ -1,16 +1,24 @@
-import { useState } from 'react'
+
 import LandingPage from './pages/landing/main'
 
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SignIn from "./pages/app/sign-in/signin";
+import SignUp from "./pages/app/sign-up/signup";
 
+
+const App = () => {
   return (
-    <>
-      <LandingPage/>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;

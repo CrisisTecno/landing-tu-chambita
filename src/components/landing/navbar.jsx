@@ -15,6 +15,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import colors from "../../theme/colors";
 import logo1 from "../../../public/assets/banner.png";
+import NavbarButton from "../app/navbarButtom"
 
 const Navbar = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -102,18 +103,7 @@ const Navbar = () => {
 
           {/* Botón Log In */}
           <Box sx={{ display: { xs: "none", md: "block" } }}>
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: colors.primary.main,
-                textTransform: "none",
-                borderRadius: "20px",
-                fontWeight: "bold",
-                "&:hover": { backgroundColor: colors.primary.dark },
-              }}
-            >
-              Log in
-            </Button>
+            <NavbarButton/>
           </Box>
 
           {/* Icono del menú hamburguesa para pantallas pequeñas */}
