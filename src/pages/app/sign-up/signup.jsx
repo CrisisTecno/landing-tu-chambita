@@ -6,7 +6,6 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  Divider,
   Grid,
   Link,
   Paper,
@@ -16,45 +15,66 @@ import {
 import colors from "../../../theme/colors";
 import { auth } from "../../../firebase"; // Configuración de Firebase
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 import img103 from "../../../../public/assets/imgs/img103.png";
+
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false); // Indica si el registro fue exitoso
+  const [modalMessage, setModalMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validación básica
+    // Validación: Contraseñas iguales
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setModalMessage("Las contraseñas no coinciden. Inténtalo de nuevo.");
       setIsLoading(false);
       setIsModalOpen(true);
       return;
     }
 
     try {
+      // Intento de creación de cuenta
       await createUserWithEmailAndPassword(auth, email, password);
       setIsLoading(false);
-      setSuccess(true); // Marca el registro como exitoso
+
+      // Mostrar éxito y redirigir al dashboard
+      setModalMessage("¡Registro exitoso! Bienvenido a TuChambita.");
+      setIsModalOpen(true);
+
+      setTimeout(() => {
+        setIsModalOpen(false);
+        navigate("/dashboard");
+      }, 3000); // Redirigir al dashboard después de 3 segundos
+
+      // Resetear campos
       setEmail("");
       setPassword("");
       setConfirmPassword("");
     } catch (err) {
-      setError(err.message || "Error al registrar la cuenta.");
       setIsLoading(false);
+
+      // Manejo de errores de Firebase
+      if (err.code === "auth/email-already-in-use") {
+        setModalMessage("El correo ya está en uso. Por favor, intenta con otro.");
+      } else if (err.code === "auth/weak-password") {
+        setModalMessage("La contraseña es demasiado débil. Usa al menos 6 caracteres.");
+      } else {
+        setModalMessage("Error al registrar la cuenta. Inténtalo más tarde.");
+      }
       setIsModalOpen(true);
     }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setError(null);
+    setModalMessage("");
   };
 
   return (
@@ -89,7 +109,7 @@ const SignUp = () => {
             textAlign: { xs: "center", md: "left" },
           }}
         >
-                      <Box
+          <Box
             sx={{
               marginBottom: 4,
               textAlign: "center",
@@ -193,20 +213,11 @@ const SignUp = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     sx={{ marginBottom: 3 }}
                   />
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: 3,
-                    }}
-                  >
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label="Acepto los términos y condiciones"
-                      sx={{ color: colors.neutral.darkGray }}
-                    />
-                  </Box>
+                  <FormControlLabel
+                    control={<Checkbox />}
+                    label="Acepto los términos y condiciones"
+                    sx={{ color: colors.neutral.darkGray, marginBottom: 3 }}
+                  />
                   <Button
                     fullWidth
                     type="submit"
@@ -250,7 +261,7 @@ const SignUp = () => {
         </Grid>
       </Grid>
 
-      {/* Modal para errores */}
+      {/* Modal para errores y éxito */}
       <Modal open={isModalOpen} onClose={closeModal}>
         <Box
           sx={{
@@ -269,12 +280,14 @@ const SignUp = () => {
           <Typography
             variant="h6"
             sx={{
-              color: colors.primary.main,
+              color: modalMessage.includes("exitoso")
+                ? colors.primary.main
+                : colors.accent.orange,
               fontWeight: "bold",
               marginBottom: 2,
             }}
           >
-            {error ? "Error" : "Éxito"}
+            {modalMessage.includes("exitoso") ? "Éxito" : "Error"}
           </Typography>
           <Typography
             variant="body1"
@@ -283,7 +296,7 @@ const SignUp = () => {
               marginBottom: 3,
             }}
           >
-            {error || "¡Registro exitoso! Ahora puedes iniciar sesión."}
+            {modalMessage}
           </Typography>
           <Button
             variant="contained"
