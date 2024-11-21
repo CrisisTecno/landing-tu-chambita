@@ -7,10 +7,11 @@ import {
   Checkbox,
   FormControlLabel,
   Divider,
-  Grid,
+  Grid,Link,
   Paper,
   CircularProgress,
 } from "@mui/material";
+import GestureButton from "./components/gestureDedector";
 import { Link as RouterLink } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
 import colors from "../../../theme/colors";
@@ -129,7 +130,7 @@ const SignIn = () => {
             <Typography
               variant="body1"
               sx={{
-                color: "#666", 
+                color: "#666",
                 marginBottom: 3,
               }}
             >
@@ -138,7 +139,7 @@ const SignIn = () => {
 
             <Button
               variant="contained"
-              onClick={closeModal} 
+              onClick={closeModal}
               sx={{
                 backgroundColor: "rgba(255, 87, 34, 0.9)",
                 color: "#fff",
@@ -352,17 +353,7 @@ const SignIn = () => {
                       label="Recuérdame"
                       sx={{ color: colors.neutral.darkGray }}
                     />
-                   <Link
-  component={RouterLink}
-  to="/signup"
-  underline="hover"
-  sx={{
-    color: colors.primary.main,
-    fontWeight: "bold",
-  }}
->
-  Regístrate
-</Link>
+                   <GestureButton />
                   </Box>
                   <Button
                     fullWidth
@@ -414,15 +405,7 @@ const SignIn = () => {
                     }}
                   >
                     ¿No tienes una cuenta?{" "}
-                    <Link
-                      to="/signup"
-                      sx={{
-                        color: colors.primary.main,
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Regístrate
-                    </Link>
+                    <GestureButton />
                   </Typography>
                 </Box>
               </>
