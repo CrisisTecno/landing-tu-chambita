@@ -8,10 +8,10 @@ import {
   FormControlLabel,
   Divider,
   Grid,
-  Link,
   Paper,
   CircularProgress,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
 import colors from "../../../theme/colors";
 import { useNavigate } from "react-router-dom";
@@ -352,13 +352,17 @@ const SignIn = () => {
                       label="Recuérdame"
                       sx={{ color: colors.neutral.darkGray }}
                     />
-                    <Link
-                      href="#"
-                      underline="hover"
-                      sx={{ color: colors.primary.main, fontSize: "14px" }}
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </Link>
+                   <Link
+  component={RouterLink}
+  to="/signup"
+  underline="hover"
+  sx={{
+    color: colors.primary.main,
+    fontWeight: "bold",
+  }}
+>
+  Regístrate
+</Link>
                   </Box>
                   <Button
                     fullWidth
@@ -412,7 +416,6 @@ const SignIn = () => {
                     ¿No tienes una cuenta?{" "}
                     <Link
                       to="/signup"
-                      underline="hover"
                       sx={{
                         color: colors.primary.main,
                         fontWeight: "bold",
