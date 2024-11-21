@@ -411,7 +411,7 @@ const SignIn = () => {
                   >
                     ¿No tienes una cuenta?{" "}
                     <Link
-                      href="/signup"
+                      to="/signup"
                       underline="hover"
                       sx={{
                         color: colors.primary.main,
