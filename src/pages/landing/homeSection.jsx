@@ -71,33 +71,7 @@ const HeroSection = () => {
             justifyContent: { xs: "center", md: "flex-start" }, // Centrado en pantallas pequeñas
           }}
         >
-          <TextField
-            placeholder="Tu correo electrónico"
-            variant="outlined"
-            sx={{
-              flex: 1,
-              maxWidth: "300px", // Tamaño máximo del input
-              borderRadius: "50px",
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "50px",
-              },
-            }}
-          />
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: colors.primary.main,
-              textTransform: "none",
-              paddingX: 4,
-              fontWeight: "bold",
-              borderRadius: "50px",
-              "&:hover": {
-                backgroundColor: colors.primary.dark,
-              },
-            }}
-          >
-            Regístrate
-          </Button>
+       
         </Box>
       </Box>
 
