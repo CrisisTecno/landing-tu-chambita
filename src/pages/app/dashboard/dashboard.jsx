@@ -21,6 +21,7 @@ import Navbar from "../../../components/app/navbar";
 import ProfileSection from "./sections/profileSection";
 import MainContent from "./sections/mainSection";
 import MessagingSection from "./sections/mensajeriaSection";
+import ChatPopup from "./components/chatpopup";
 const Dashboard = () => {
   return (
     <Box
@@ -71,7 +72,7 @@ const Dashboard = () => {
       <Grid item xs={12} md={9.5}>
         <MainContent />
       </Grid>
-
+      <ChatPopup /> 
     </Grid>
     </Box>
   );

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Box, Typography, Avatar, Card, CardContent, Button } from "@mui/material";
-import colors from "../../theme/colors";
+import colors from "../../../../theme/colors";
 
 const reviews = [
   {
@@ -66,7 +66,6 @@ const ReviewsCarousel = () => {
         padding: 4,
         backgroundColor: "#fff",
         borderRadius: "16px",
-        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
       }}
     >
       {/* Título */}
@@ -75,14 +74,7 @@ const ReviewsCarousel = () => {
       </Typography>
 
       {/* Rating general */}
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: 4 }}>
-        <Typography variant="h6" sx={{ color: colors.accent.orange, marginRight: 1 }}>
-          ★★★★★
-        </Typography>
-        <Typography variant="body1" sx={{ color: colors.neutral.darkGray }}>
-          4.9 de 5 (39 reseñas)
-        </Typography>
-      </Box>
+
 
       {/* Carrusel de reseñas */}
       <Box
@@ -92,7 +84,8 @@ const ReviewsCarousel = () => {
           overflowX: "auto", // Habilitar desplazamiento horizontal
           gap: 3,
           scrollBehavior: "smooth",
-          paddingBottom: 2,
+          paddingBottom: 4,
+          paddingTop:4,
           "&::-webkit-scrollbar": {
             display: "none", // Ocultar scrollbar en navegadores compatibles
           },
@@ -155,10 +148,17 @@ const ReviewsCarousel = () => {
         <Button
           variant="contained"
           sx={{
+            borderRadius:"2vw",
             textTransform: "none",
-            backgroundColor: colors.primary.main,
+            color:"#fff",
+            paddingLeft:5,
+            paddingRight:5,
+            fontWeight:"bold",
+            backgroundColor: colors.accent.orange,
+            transition: "all 0.3s ease",
             "&:hover": {
-              backgroundColor: colors.primary.dark,
+              backgroundColor: colors.accent.orange,
+              transform:"scale(1.1,1.1)",
             },
           }}
         >
