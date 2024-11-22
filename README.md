@@ -1,6 +1,6 @@
 # 🚀 TuChambita
 
-![TuChambita Logo](https://via.placeholder.com/150)  
+![TuChambita Logo](/public/assets/banner.png)  
 Bienvenido a **TuChambita**, la plataforma que conecta a los mejores profesionales con quienes necesitan su talento. 🌟 ¡Tu solución rápida y confiable para encontrar expertos en plomería, electricidad, carpintería, diseño, y mucho más! 🛠️✨
 
 ---
