@@ -2,9 +2,11 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import colors from "../../theme/colors"; // Importa tus colores personalizados
 
-const SidebarOption = ({ icon, label }) => {
+const SidebarOption = ({ icon, label, onclick, activate }) => {
+
   return (
     <Box
+      onClick={onclick}
       sx={{
         display: "flex",
         alignItems: "center",
@@ -13,15 +15,13 @@ const SidebarOption = ({ icon, label }) => {
         borderRadius: "24px", // Botón redondeado
         cursor: "pointer",
         transition: "all 0.3s ease", // Animación suave
-        backgroundColor: "transparent", // Fondo por defecto
+        backgroundColor: activate ? colors.primary.light : "transparent", // Fondo cuando está activo
         "&:hover": {
           backgroundColor: colors.primary.light, // Fondo del botón al hover
-          // Agregar sombra al hover
         },
         "&:hover .icon": {
           backgroundColor: "#fff", // Fondo del ícono al hover
-          
-          color: colors.accent.orange, 
+          color: colors.accent.orange,
         },
         "&:hover .label": {
           color: colors.accent.orange, // Cambiar color del texto al hover
@@ -35,8 +35,8 @@ const SidebarOption = ({ icon, label }) => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: colors.accent.blue, // Fondo del ícono
-          color:  "#3c3c3c",// Color inicial del ícono
+          backgroundColor: activate ? "#fff" : colors.accent.blue, // Fondo del ícono cuando está activo
+          color: activate ? colors.accent.orange : "#3c3c3c", // Color del ícono cuando está activo
           width: "36px",
           height: "36px",
           borderRadius: "50%", // Ícono circular
@@ -52,7 +52,7 @@ const SidebarOption = ({ icon, label }) => {
         sx={{
           fontSize: "16px",
           fontWeight: "bold",
-          color:  "#3c3c3c",  // Color inicial del texto
+          color: activate ? colors.accent.orange : "#3c3c3c", // Color del texto cuando está activo
           transition: "color 0.3s ease", // Animación de color
         }}
       >

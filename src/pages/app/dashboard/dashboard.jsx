@@ -19,7 +19,7 @@ import SendIcon from "@mui/icons-material/Send";
 import colors from "../../../theme/colors";
 import Navbar from "../../../components/app/navbar";
 import ProfileSection from "./sections/profileSection";
-import MainContent from "./sections/mainSection";
+import MainContent from "./content/main.content";
 import MessagingSection from "./sections/mensajeriaSection";
 import ChatPopup from "./components/chatpopup";
 const Dashboard = () => {
@@ -70,7 +70,9 @@ const Dashboard = () => {
 
       {/* Columna central: Contenido principal */}
       <Grid item xs={12} md={9.5}>
+
         <MainContent />
+
       </Grid>
       <ChatPopup /> 
     </Grid>
