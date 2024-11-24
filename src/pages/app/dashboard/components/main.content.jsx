@@ -11,8 +11,8 @@ import {
 import colors from "../../../../theme/colors";
 import CreatePost from "../../../../components/app/createPost";
 import WelcomeBanner from "../../../../components/app/wellcomeBanner";
-import ReviewsCarousel from "../components/carrusel";
-import PublicationCard from "../components/publishcard";
+import ReviewsCarousel from "./carrusel";
+import PublicationCard from "./publishcard";
 
 const publications = [
   {
@@ -112,7 +112,7 @@ const MainContent = () => {
       </Typography>
       <Box sx={{ padding: 4 }}>
           {publications.map((pub, index) => (
-              <div style={{marginTop:"2vh",marginBottom:"2vh", }}>
+              <div style={{marginTop:"2vh",marginBottom:"2vh", }} key={index}>
               <PublicationCard {...pub} />
               </div>
           ))}

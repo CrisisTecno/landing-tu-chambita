@@ -8,7 +8,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/app/sign-in/signin";
 import SignUp from "./pages/app/sign-up/signup";
 import Dashboard from "./pages/app/dashboard/dashboard";
-import ChatApp from './pages/app/dashboard/content/chat.content';
+import ChatApp from './pages/app/messages/messages';
+import ProfileView from './pages/app/profile/profile';
 
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/messages" element={<ChatApp />} />
+        <Route path="/profile" element={<ProfileView profileId="ab6bld2lrjoefdstl8xu" bannerId="ptlx4y03deoqp6rzvurt" />}  />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>

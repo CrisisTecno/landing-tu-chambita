@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   Box,
   Typography,
@@ -23,8 +23,11 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
+import { UserContext } from "../../../context/user.provider";
 
 const SignIn = () => {
+  const {login,user,setUser}=useContext(UserContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null); // Para manejar errores
@@ -39,17 +42,16 @@ const SignIn = () => {
     try {
       console.log(email);
       console.log(password);
-      // Intento de inicio de sesión
-      await signInWithEmailAndPassword(auth, email, password);
+      await login(email, password);
+      console.log("Usuario");
+      console.log(user)
       console.log("Inicio de sesión exitoso");
       setIsLoading(false);
 
-      // Redirigir al dashboard
       navigate("/dashboard");
     } catch (err) {
       console.error("Error de inicio de sesión:", err.message);
 
-      // Mostrar error en el modal
       setError(
         err.code === "auth/user-not-found"
           ? "La cuenta no existe. Por favor, regístrate primero."

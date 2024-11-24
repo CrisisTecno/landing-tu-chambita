@@ -1,8 +1,13 @@
 import React from "react";
 import { Box, Typography, Paper, Avatar, Divider, Button } from "@mui/material";
 import colors from "../../../../theme/colors";
-
+import { useNavigate, useLocation } from "react-router-dom";
 const ProfileSection = () => {
+  const navigate = useNavigate();
+  
+  const goToProfile = () => {
+    navigate("/profile");
+  };
   return (
     <Paper
       elevation={3}
@@ -51,6 +56,7 @@ const ProfileSection = () => {
 
         <Button
           fullWidth
+          onClick={goToProfile}
           variant="contained"
           sx={{
             backgroundColor: colors.accent.orange,
@@ -58,7 +64,7 @@ const ProfileSection = () => {
             borderRadius:"12px",
             textTransform: "none",
             marginTop: 3,
-          
+            
           }}
         >
           Editar Perfil

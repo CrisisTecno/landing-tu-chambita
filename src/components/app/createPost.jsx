@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { UserContext } from "../../../src/context/user.provider";
 import {
   Box,
   Button,
@@ -7,17 +8,112 @@ import {
   IconButton,
   TextField,
   Avatar,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ArticleIcon from "@mui/icons-material/Article";
 import CloseIcon from "@mui/icons-material/Close";
-import colors from "../../theme/colors"; // Asegúrate de usar tu paleta de colores personalizada.
+import colors from "../../theme/colors";
+import { db } from "../../firebase"; // Firebase configuration
+import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import { configDocumentId } from "../../config/config";
 
 const CreatePost = () => {
+  const { user } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [location, setLocation] = useState("");
+
+  // Estado para mostrar el mensaje de éxito o error
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const openDialog = (message) => {
+    setDialogMessage(message);
+    setIsDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogMessage("");
+    setIsDialogOpen(false);
+  };
+
+  // Fetch categories from Firestore
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const docRef = doc(db, "config", configDocumentId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setAvailableCategories(data.categorias || []);
+        } else {
+          console.error("El documento de configuración no existe en Firestore.");
+        }
+      } catch (e) {
+        console.error("Error al obtener categorías desde Firestore:", e.message);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleChipClick = (category) => {
+    setSelectedCategories((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category) // Quita la categoría si ya está seleccionada
+        : [...prev, category] // Agrega la categoría si no está seleccionada
+    );
+  };
+
+  const handlePublish = async () => {
+    if (!postContent.trim()) {
+      openDialog("Por favor, escribe algo para publicar.");
+      return;
+    }
+
+    if (selectedCategories.length === 0) {
+      openDialog("Selecciona al menos una categoría.");
+      return;
+    }
+
+    if (!location.trim()) {
+      openDialog("La ubicación no puede estar vacía.");
+      return;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, "publicacion"), {
+        contenido: postContent,
+        categorias: selectedCategories,
+        ubicacion: location,
+        fechaDeCreacion: serverTimestamp(),
+        autor: {
+          nombre: user?.nombre || "Usuario desconocido",
+          rol: user?.rol || "usuario",
+          uid: user?.uid || "UID desconocido",
+        },
+      });
+
+      console.log("Publicación creada con ID:", docRef.id);
+      openDialog("¡Publicación creada exitosamente!");
+      setPostContent(""); // Limpia el contenido después de publicar
+      setSelectedCategories([]); // Limpia las categorías seleccionadas
+      setLocation(""); // Limpia la ubicación
+      handleCloseModal(); // Cierra el modal
+    } catch (error) {
+      console.error("Error al crear publicación:", error.message);
+      openDialog("Error al crear publicación. Inténtalo más tarde.");
+    }
+  };
 
   return (
     <Box
@@ -35,23 +131,16 @@ const CreatePost = () => {
           alignItems: "center",
           gap: 2,
           padding: "12px 20px",
-          borderRadius: "24px", // Botón redondeado
+          borderRadius: "24px",
           cursor: "pointer",
           border: `1px solid ${colors.neutral.lightGray}`,
-          transition: "all 0.3s ease", // Animación suave
+          transition: "all 0.3s ease",
           "&:hover": {
-            backgroundColor: colors.primary.light, // Fondo del botón al hover
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Agregar sombra al hover
-          },
-          "&:hover .icon": {
-            backgroundColor: "#fff", // Fondo del ícono al hover
-            color: colors.accent.orange, // Cambiar color del ícono al hover
-          },
-          "&:hover .label": {
-            color: colors.accent.orange, // Cambiar color del texto al hover
+            backgroundColor: colors.primary.light,
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
           },
         }}
-        onClick={handleOpenModal} // Abre el modal al hacer clic
+        onClick={handleOpenModal}
       >
         <Avatar
           src="/path-to-avatar.jpg" // Cambia por la ruta del avatar del usuario
@@ -60,70 +149,6 @@ const CreatePost = () => {
         <Typography className="label" sx={{ color: colors.neutral.darkGray }}>
           Crea una publicación, comparte tu trabajo
         </Typography>
-      </Box>
-
-      {/* Opciones debajo del input */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 2,
-          paddingLeft: "10vw",
-          paddingRight: "10vw",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            cursor: "pointer",
-            borderRadius: "24px",
-            padding: "10px 15px",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              backgroundColor: colors.primary.light,
-              "& .icon": {
-                color: colors.accent.orange,
-              },
-              "& .label": {
-                color: colors.accent.orange,
-              },
-            },
-          }}
-          onClick={handleOpenModal}
-        >
-          <AddPhotoAlternateIcon className="icon" sx={{ color:  colors.accent.orange}} />
-          <Typography className="label" sx={{ color: colors.accent.orange }}>
-            Contenido multimedia
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            cursor: "pointer",
-            borderRadius: "24px",
-            padding: "10px 15px",
-            transition: "all 0.3s ease",
-            "&:hover": {
-              backgroundColor: colors.primary.light,
-              "& .icon": {
-                color: colors.accent.orange,
-              },
-              "& .label": {
-                color: colors.accent.orange,
-              },
-            },
-          }}
-          onClick={handleOpenModal}
-        >
-          <ArticleIcon className="icon" sx={{ color: colors.accent.orange}} />
-          <Typography className="label" sx={{ color:  colors.accent.orange }}>
-            Escribir artículo
-          </Typography>
-        </Box>
       </Box>
 
       {/* Modal para crear publicación */}
@@ -146,7 +171,6 @@ const CreatePost = () => {
             sx={{
               display: "flex",
               alignItems: "center",
-              color:"#fff",
               justifyContent: "space-between",
               marginBottom: 3,
             }}
@@ -157,11 +181,11 @@ const CreatePost = () => {
                 sx={{ width: 40, height: 40 }}
               />
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: "bold",color:"#000" }}>
-                  Cristian Lucio Quispe Nina
+                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>
+                  {user?.nombre || "Usuario desconocido"}
                 </Typography>
                 <Typography variant="body2" sx={{ color: colors.neutral.darkGray }}>
-                Cliente tu Chambita
+                  {user?.rol || "Rol desconocido"}
                 </Typography>
               </Box>
             </Box>
@@ -173,13 +197,36 @@ const CreatePost = () => {
           {/* Campo para escribir publicación */}
           <TextField
             fullWidth
+            label="Ubicación"
+            placeholder="Ejemplo: La Paz, Bolivia"
+            variant="outlined"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            sx={{
+              marginBottom: 3,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: colors.neutral.lightGray,
+                },
+                "&:hover fieldset": {
+                  borderColor: colors.primary.main,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: colors.primary.main,
+                },
+              },
+            }}
+          />
+          <TextField
+            fullWidth
             multiline
             rows={4}
             placeholder="¿Sobre qué quieres hablar?"
             variant="outlined"
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
             sx={{
               marginBottom: 3,
-              borderRadius:"15px",
               "& .MuiOutlinedInput-root": {
                 "& fieldset": {
                   borderColor: colors.neutral.lightGray,
@@ -194,33 +241,112 @@ const CreatePost = () => {
             }}
           />
 
-          {/* Opciones de multimedia */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 2,justifyContent:"center" }}>
-            <IconButton sx={{ color: colors.accent.orange }}>
-              <AddPhotoAlternateIcon />
-            </IconButton>
-            <IconButton sx={{ color: colors.accent.orange }}>
-              <ArticleIcon />
-            </IconButton>
+          {/* Chips de categorías */}
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, marginBottom: 3 }}>
+            {availableCategories.map((category) => (
+              <Box
+                key={category}
+                onClick={() => handleChipClick(category)}
+                sx={{
+                  padding: "5px 10px",
+                  borderRadius: "16px",
+                  cursor: "pointer",
+                  backgroundColor: selectedCategories.includes(category)
+                    ? colors.accent.orange
+                    : colors.neutral.lightGray,
+                  color: selectedCategories.includes(category) ? "#fff" : colors.neutral.darkGray,
+                  fontWeight: "bold",
+                  "&:hover": {
+                    backgroundColor: selectedCategories.includes(category)
+                      ? colors.accent.orangeHover
+                      : colors.neutral.mediumGray,
+                  },
+                }}
+              >
+                {category}
+              </Box>
+            ))}
           </Box>
 
           {/* Botón para publicar */}
           <Button
             fullWidth
             variant="contained"
+            onClick={handlePublish}
             sx={{
               textTransform: "none",
               fontWeight: "bold",
               backgroundColor: colors.accent.orange,
-              borderRadius:"2vw",
               color: "#fff",
-              
+              "&:hover": { backgroundColor: colors.accent.orangeHover },
             }}
           >
             Publicar
           </Button>
         </Box>
       </Modal>
+
+      {/* Dialog para mensajes de éxito o error */}
+      <Dialog
+  open={isDialogOpen}
+  onClose={closeDialog}
+  sx={{
+    "& .MuiPaper-root": {
+      borderRadius: "16px",
+      padding: "30px 20px", // Espaciado general para el diálogo
+      textAlign: "center",
+      maxWidth: "400px", // Ancho máximo
+      margin: "0 auto", // Centrado
+    },
+  }}
+>
+  <DialogContent>
+    <Typography
+      variant="h5"
+      sx={{
+        fontWeight: "bold",
+        color: dialogMessage.includes("exitosamente")
+          ? colors.primary.main
+          : colors.accent.orange,
+        marginBottom: 3, // Más espacio debajo del título
+      }}
+    >
+      {dialogMessage.includes("exitosamente") ? "¡Éxito!" : "¡Error!"}
+    </Typography>
+    <Typography
+      variant="body1"
+      sx={{
+        color: colors.neutral.darkGray,
+        marginBottom: 3, // Espaciado debajo del mensaje
+        lineHeight: 1.5, // Mejora la legibilidad
+      }}
+    >
+      {dialogMessage}
+    </Typography>
+  </DialogContent>
+  <DialogActions
+    sx={{
+      justifyContent: "center", // Centra el botón
+      marginTop: -2, // Espaciado superior
+    }}
+  >
+    <Button
+      onClick={closeDialog}
+      sx={{
+        backgroundColor: colors.accent.orange,
+        color: "#fff",
+        fontWeight: "bold",
+        textTransform: "none",
+        padding: "10px 20px", // Botón más grande
+        borderRadius: "8px",
+        "&:hover": { backgroundColor: colors.accent.orangeHover },
+      }}
+    >
+      Cerrar
+    </Button>
+  </DialogActions>
+</Dialog>
+
     </Box>
   );
 };

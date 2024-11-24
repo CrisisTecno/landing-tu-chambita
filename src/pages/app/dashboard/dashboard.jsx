@@ -1,27 +1,14 @@
 import React from "react";
 import {
   Box,
-  Grid,
-  Typography,
-  Avatar,
-  Button,
-  Paper,
-  TextField,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Divider,
-  IconButton,
 } from "@mui/material";
-import MessageIcon from "@mui/icons-material/Message";
-import SendIcon from "@mui/icons-material/Send";
 import colors from "../../../theme/colors";
 import Navbar from "../../../components/app/navbar";
 import ProfileSection from "./sections/profileSection";
-import MainContent from "./content/main.content";
+import MainContent from "./components/main.content";
 import MessagingSection from "./sections/mensajeriaSection";
 import ChatPopup from "./components/chatpopup";
+
 const Dashboard = () => {
   return (
     <Box
@@ -29,53 +16,61 @@ const Dashboard = () => {
         display: "flex",
         flexDirection: "column",
         minHeight: "100vh",
-        minWidth: "100vw",
-        
         backgroundColor: colors.secondary.main,
       }}
     >
-      {/* Título del Dashboard */}
       <Box
         sx={{
-            margin: 0.5,
+          margin: 0.5,
           padding: 0.1,
-          borderRadius:"12px" ,
+          borderRadius: "12px",
           backgroundColor: "#fff",
-          color: "#fff",
         }}
       >
-        <Navbar/>
-        {/* <Typography variant="h5" fontWeight="bold">
-          Bienvenido a TuChambita
-        </Typography>
-        <Typography variant="body2">
-          Encuentra profesionales, administra tus servicios y mantente conectado.
-        </Typography> */}
+        <Navbar />
       </Box>
 
-      {/* Contenido principal del Dashboard */}
-      <div style={{height:"5vh"}}></div>
-      <Grid
-    
-      container
-      spacing={2}
-      sx={{ padding: 2}}
-    >
-      {/* Columna izquierda: Perfil */}
-      <Grid item xs={12} md={2.5}>
-        <ProfileSection />
-        <div style={{height:"2vh"}}></div>
-        <MessagingSection />
-      </Grid>
+      <div style={{ height: "7vh" }}></div>
 
-      {/* Columna central: Contenido principal */}
-      <Grid item xs={12} md={9.5}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          flexGrow: 1,
+        }}
+      >
+        {/* Sidebar: Perfil y Mensajería */}
+        <Box
+          sx={{
+            flex: "0 0 20%", 
+            margin: "1vw",
+            position: "sticky", // Sticky behavior
+            top: "8vh",
+            height: "82vh", // Altura total menos el navbar
+            overflowY: "auto", // Permite scroll si el contenido es grande
+            backgroundColor: "#fff",
+            borderRadius: "12px",
+            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)", // Sombra para resaltar
+            padding: "1rem", // Espaciado interno
+          }}
+        >
+          <ProfileSection />
+          <div style={{ height: "2vh" }}></div>
+          <MessagingSection />
+        </Box>
 
-        <MainContent />
-
-      </Grid>
-      <ChatPopup /> 
-    </Grid>
+        {/* Contenido principal */}
+        <Box
+          sx={{
+            width:"75vw",
+            flex: "0 0 0%", 
+            color: "#fff",
+          }}
+        >
+          <MainContent />
+          <ChatPopup />
+        </Box>
+      </Box>
     </Box>
   );
 };

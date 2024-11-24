@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Box, Grid } from "@mui/material";
-import Sidebar from "../components/sidebar";
-import ChatPanel from "../components/chatpanel";
-import ChatDetails from "../components/chatdetails";
-import Navbar from "../../../../components/app/navbar";
+import Sidebar from "./components/sidebar";
+import ChatPanel from "./components/chatpanel";
+import ChatDetails from "./components/chatdetails";
+import Navbar from "../../../components/app/navbar";
 
 const ChatApp = () => {
   useEffect(() => {
