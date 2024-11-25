@@ -127,6 +127,7 @@ const SignUp = () => {
         descripcion,
         servicios: selectedServices,
         location,
+        rol:"Cliente",
         correo:email,
         uid: user1.uid,
         fechaDeCreacion: new Date(),
