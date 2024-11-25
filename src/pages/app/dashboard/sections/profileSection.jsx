@@ -1,13 +1,38 @@
-import React from "react";
-import { Box, Typography, Paper, Avatar, Divider, Button } from "@mui/material";
+import React, { useContext, useState } from "react";
+import { Box, Typography, Paper, Divider, Button, CircularProgress } from "@mui/material";
+import { AdvancedImage } from "@cloudinary/react";
+import { Cloudinary } from "@cloudinary/url-gen";
+import { auto } from "@cloudinary/url-gen/actions/resize";
+import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
 import colors from "../../../../theme/colors";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../../context/user.provider"; // Importamos el contexto
+
+const cld = new Cloudinary({ cloud: { cloudName: "diubghp1i" } }); // Configuración de Cloudinary
+
 const ProfileSection = () => {
+  const { user } = useContext(UserContext); // Obtenemos los datos del usuario desde el contexto
   const navigate = useNavigate();
-  
+  const [isImageLoading, setIsImageLoading] = useState(true); // Estado para controlar la carga de la imagen
+
+  const profile = cld
+    .image(`tu-chambita/profile/${user?.profileId || "default-profile"}`) // Ruta de la imagen en Cloudinary
+    .format("auto")
+    .quality("auto")
+    .resize(auto().gravity(autoGravity()).width(500).height(500));
+
   const goToProfile = () => {
     navigate("/profile");
   };
+
+  const handleImageLoad = () => {
+    setIsImageLoading(false); // Se oculta el spinner cuando la imagen ha cargado
+  };
+
+  const handleImageError = () => {
+    setIsImageLoading(false); // También oculta el spinner si la imagen no carga
+  };
+
   return (
     <Paper
       elevation={3}
@@ -19,16 +44,38 @@ const ProfileSection = () => {
       }}
     >
       {/* Avatar y nombre del usuario */}
-      <Box sx={{ textAlign: "center", marginBottom: 2 }}>
-        <Avatar
-          src="/path-to-profile-image.jpg" // Cambiar por la imagen del usuario
-          sx={{ width: 80, height: 80, margin: "0 auto", marginBottom: 1 }}
+      <Box sx={{ textAlign: "center", marginBottom: 2, position: "relative" }}>
+        {isImageLoading && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <CircularProgress size={40} color="primary" />
+          </Box>
+        )}
+        <AdvancedImage
+          cldImg={profile}
+          alt={user?.nombre || "Usuario"}
+          style={{
+            display: isImageLoading ? "none" : "block",
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            margin: "0 auto",
+            marginBottom: "1rem",
+          }}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
         <Typography variant="h6" fontWeight="bold">
-          Cristian Lucio
+          {user?.nombre || "Usuario Desconocido"}
         </Typography>
         <Typography variant="body2" color={colors.neutral.mediumGray}>
-          Frontend Developer
+          {user?.rol || "Sin Rol Definido"}
         </Typography>
       </Box>
 
@@ -37,10 +84,10 @@ const ProfileSection = () => {
       {/* Detalles del perfil */}
       <Box>
         <Typography variant="body2" fontWeight="bold" sx={{ marginBottom: 1 }}>
-          Categoría:
+          Categorías:
         </Typography>
         <Typography variant="body2" color={colors.neutral.darkGray}>
-          Plomería, Electricidad
+          {user?.servicios?.join(", ") || "Sin Categorías Definidas"}
         </Typography>
 
         <Typography
@@ -51,7 +98,7 @@ const ProfileSection = () => {
           Calificación:
         </Typography>
         <Typography variant="body2" color={colors.accent.orange}>
-          ⭐ 4.9 (120 reseñas)
+          ⭐ {user?.calificacion || "N/A"} (120 reseñas) {/* Valor predeterminado */}
         </Typography>
 
         <Button
@@ -61,10 +108,9 @@ const ProfileSection = () => {
           sx={{
             backgroundColor: colors.accent.orange,
             color: "#fff",
-            borderRadius:"12px",
+            borderRadius: "12px",
             textTransform: "none",
             marginTop: 3,
-            
           }}
         >
           Editar Perfil

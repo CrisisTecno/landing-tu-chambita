@@ -6,12 +6,32 @@ import ReviewWidget from "./cardprofile"; // Componente del widget de reseña
 
 const PublicationCard = ({
   imageUrl,
-  category,
+  categories, // Array de categorías
   serviceName,
   description,
   location,
   reviewData,
+  fechaDeCreacion, // Timestamp de Firestore
 }) => {
+  // **Preparación de las categorías**
+  const formattedCategories =
+    Array.isArray(categories) && categories.length > 0
+      ? categories.join(" #")
+      : "Sin categorías";
+
+  // **Formateo de la fecha de creación**
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "Sin fecha";
+
+    // Convertimos el timestamp de Firestore a un objeto `Date`
+    const date = timestamp.toDate(); // Método Firestore
+    return date.toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -32,7 +52,7 @@ const PublicationCard = ({
         },
       }}
     >
-      {/* Imagen - 40% del ancho */}
+      {/* Imagen */}
       <Box
         sx={{
           width: { xs: "100%", md: "40%" },
@@ -41,7 +61,7 @@ const PublicationCard = ({
         }}
       />
 
-      {/* Detalles - 60% del ancho */}
+      {/* Detalles */}
       <Box
         sx={{
           width: { xs: "100%", md: "60%" },
@@ -51,9 +71,9 @@ const PublicationCard = ({
           justifyContent: "space-between",
         }}
       >
-        {/* Categoría */}
+        {/* Categorías */}
         <Chip
-          label={`#${category}`}
+          label={`#${formattedCategories}`} // Categorías formateadas
           sx={{
             backgroundColor: colors.primary.main,
             color: "#fff",
@@ -67,39 +87,47 @@ const PublicationCard = ({
         <Box>
           <ReviewWidget {...reviewData} />
           <Typography
-            variant="h6"
-            sx={{
-              fontWeight: "bold",
-              textAlign: "center",
-              color: colors.accent.orange,
-              marginBottom: 1,
-            }}
-          >
-            {serviceName}
-          </Typography>
-          <Typography
             variant="body2"
-            sx={{ color: colors.neutral.darkGray, marginBottom: 2 }}
+            sx={{
+              color: colors.neutral.darkGray,
+              marginBottom: 2,
+              fontSize: 18,
+              marginRight: 2,
+              marginLeft: 2,
+            }}
           >
             {description}
           </Typography>
         </Box>
 
-        {/* Ubicación */}
+        {/* Fecha de creación y ubicación */}
         <Box
           sx={{
             display: "flex",
-            justifyContent: "center",
+            justifyContent: "space-between", // Separar elementos
             alignItems: "center",
             textAlign: "center",
             marginBottom: 2,
             gap: 1,
           }}
         >
-          <LocationOnIcon sx={{ color: colors.accent.orange, fontSize: "20px" }} />
-          <Typography variant="body2" sx={{ color: colors.neutral.darkGray }}>
-            {location}
+          <Typography variant="body2" sx={{ color: colors.neutral.darkGray , marginRight: 2,
+              marginLeft: 2,}}>
+            {fechaDeCreacion ? formatDate(fechaDeCreacion) : "Sin fecha"} {/* Formatear la fecha */}
           </Typography>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <LocationOnIcon sx={{ color: colors.accent.orange, fontSize: "20px" }} />
+            <Typography variant="body2" sx={{ color: colors.neutral.darkGray , marginRight: 2,
+              marginLeft: 2,}}>
+              {location || "Ubicación no disponible"}
+            </Typography>
+          </Box>
         </Box>
 
         {/* Botón CTA */}

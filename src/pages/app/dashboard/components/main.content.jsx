@@ -12,7 +12,10 @@ import colors from "../../../../theme/colors";
 import CreatePost from "../../../../components/app/createPost";
 import WelcomeBanner from "../../../../components/app/wellcomeBanner";
 import ReviewsCarousel from "./carrusel";
-import PublicationCard from "./publishcard";
+import PublicationCard from "./publishCard";
+import PublicationsList from "./publicationList";
+import CategoryFilter from "./categoryFilter";
+import PublicationsList2 from "./publicationList.2";
 
 const publications = [
   {
@@ -74,6 +77,12 @@ const publications = [
 ];
 
 const MainContent = () => {
+  
+  const handleCategoryClick = (category) => {
+    console.log("Categoría seleccionada:", category);
+    // Aquí puedes filtrar el contenido basado en la categoría seleccionada
+  };
+
   return (
     <Paper
       elevation={3}
@@ -89,6 +98,7 @@ const MainContent = () => {
         sx={{
           fontWeight: "bold",
           marginBottom: 2,
+          marginLeft:4,
           color: colors.primary.main,
           textAlign: "left",
         }}
@@ -99,25 +109,31 @@ const MainContent = () => {
       <CreatePost />
       <WelcomeBanner />
       <ReviewsCarousel />
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: "bold",
-          marginBottom: 2,
-          color: colors.primary.main,
-          textAlign: "left",
-        }}
-      >
-        Nuevas Publicaciones
-      </Typography>
-      <Box sx={{ padding: 4 }}>
-          {publications.map((pub, index) => (
-              <div style={{marginTop:"2vh",marginBottom:"2vh", }} key={index}>
-              <PublicationCard {...pub} />
-              </div>
-          ))}
-      </Box>
-
+      <PublicationsList />
+    <CategoryFilter onCategoryClick={handleCategoryClick} />
+          
+     
+      <PublicationsList2 />
+      {/* <Box sx={{ padding: 4 }}>
+        {publications.map((pub, index) => (
+          <div style={{ marginTop: "2vh", marginBottom: "2vh" }} key={index}>
+            <PublicationCard {...pub} />
+          </div>
+        ))}
+      </Box> */}
+      {/* (parameter) pub: {
+    imageUrl: string;
+    category: string;
+    serviceName: string;
+    description: string;
+    location: string;
+    reviewData: {
+        avatar: string;
+        name: string;
+        rating: number;
+        totalReviews: number;
+    };
+} */}
       <List>
         <ListItem>
           <ListItemText

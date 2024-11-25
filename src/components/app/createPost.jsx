@@ -97,7 +97,10 @@ const CreatePost = () => {
         ubicacion: location,
         fechaDeCreacion: serverTimestamp(),
         autor: {
+          avatar: user?.profileId,
           nombre: user?.nombre || "Usuario desconocido",
+          calificacion:user?.calificacion||0,
+          totalVistas:user?.totalVistas||0,
           rol: user?.rol || "usuario",
           uid: user?.uid || "UID desconocido",
         },
@@ -326,8 +329,8 @@ const CreatePost = () => {
   </DialogContent>
   <DialogActions
     sx={{
-      justifyContent: "center", // Centra el botón
-      marginTop: -2, // Espaciado superior
+      justifyContent: "center", 
+      marginTop: -2, 
     }}
   >
     <Button
@@ -337,7 +340,7 @@ const CreatePost = () => {
         color: "#fff",
         fontWeight: "bold",
         textTransform: "none",
-        padding: "10px 20px", // Botón más grande
+        padding: "10px 20px",
         borderRadius: "8px",
         "&:hover": { backgroundColor: colors.accent.orangeHover },
       }}

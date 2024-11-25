@@ -20,7 +20,7 @@ const App = () => {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/messages" element={<ChatApp />} />
-        <Route path="/profile" element={<ProfileView profileId="ab6bld2lrjoefdstl8xu" bannerId="ptlx4y03deoqp6rzvurt" />}  />
+        <Route path="/profile" element={<ProfileView />}  />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
