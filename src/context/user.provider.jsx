@@ -72,9 +72,7 @@ const UserProvider = ({ children }) => {
       if (!querySnapshot.empty) {
         // Obtén los datos del usuario del primer documento encontrado
         const userData = querySnapshot.docs[0].data();
-        console.log("Usuario encontrado en Firestore:", userData);
-  
-        // Actualiza el estado del usuario en el contexto
+        
         setUser({
           ...userData,
         });

@@ -24,31 +24,25 @@ const PublicationsListById = ({ id }) => {
 
       try {
         setIsLoading(true);
-        console.log(id)
-        // Consulta a Firestore para obtener publicaciones por `autorId`
+     
         const publicationsRef = collection(db, "publicacion");
-        // const publicationsQuery = query(
-        //   publicationsRef,
-        //   where("autorId", "==", id),
-        //   orderBy("fechaDeCreacion", "desc")
-        // );
-
+  
         const publicationsQuery = query(
             publicationsRef,
-            where("autor.uid", "==", id), // Usamos `autor.uid` según la imagen
+            where("autor.uid", "==", id), 
          
           );
 
         const snapshot = await getDocs(publicationsQuery);
 
-        // Transformar los datos en un array
+     
         const fetchedPublications = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
         setPublications(fetchedPublications);
-        console.log(publications)
+    
       } catch (error) {
         console.error("Error al obtener publicaciones por ID:", error.message);
         setPublications([]);

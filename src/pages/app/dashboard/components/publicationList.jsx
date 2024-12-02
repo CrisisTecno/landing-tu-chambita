@@ -10,8 +10,10 @@ import {
 import PublicationCard from "./publishCard"; // Componente individual de publicación
 import { PublicationsContext } from "../../../../context/publication.provider"; // Contexto de publicaciones
 import colors from "../../../../theme/colors";
+import { useNavigate } from "react-router-dom";
 
 const PublicationsList = () => {
+  const navigate= useNavigate();
   const { isLoading, fiveFirst } = useContext(PublicationsContext);
   const [selectedPublication, setSelectedPublication] = useState(null); // Publicación seleccionada para mostrar en el modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado del modal
@@ -115,12 +117,14 @@ const PublicationsList = () => {
                     "/assets/default-avatar.png"
                   }
                   alt={selectedPublication.autor?.nombre || "Sin Nombre"}
-                  sx={{ width: 60, height: 60 }}
+                  sx={{ width: 60, height: 60 }}  
+             
                 />
                 <Box>
                   <Typography
                     variant="h6"
                     sx={{ fontWeight: "bold", color: "#000" }}
+                    onClick={() => navigate(`/profilex/${selectedPublication.autor?.uid}`)} 
                   >
                     {selectedPublication.autor?.nombre || "Usuario Desconocido"}
                   </Typography>
@@ -193,6 +197,7 @@ const PublicationsList = () => {
                     borderRadius: "12px",
                     backgroundColor: colors.accent.orange,
                     textTransform: "none",
+                    color:"#fff",
                     "&:hover": { backgroundColor: colors.accent.orangeHover },
                   }}
                   onClick={handleCloseModal}

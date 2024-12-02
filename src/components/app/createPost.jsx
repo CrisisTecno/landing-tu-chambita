@@ -106,7 +106,7 @@ const CreatePost = () => {
         },
       });
 
-      console.log("Publicación creada con ID:", docRef.id);
+   
       openDialog("¡Publicación creada exitosamente!");
       setPostContent(""); // Limpia el contenido después de publicar
       setSelectedCategories([]); // Limpia las categorías seleccionadas

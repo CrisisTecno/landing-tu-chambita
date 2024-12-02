@@ -27,7 +27,6 @@ const ProfileView = () => {
   const [openModal, setOpenModal] = useState(false);
   const contactId=user.uid;
   useEffect(() => {
-    console.log(user);
     if (!user) {
       setOpenModal(true); // Mostrar el modal si no hay usuario
     }
