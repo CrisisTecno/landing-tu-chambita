@@ -7,30 +7,23 @@ import {
   Checkbox,
   FormControlLabel,
   Divider,
-  Grid,Link,
+  Grid,
   Paper,
   CircularProgress,
 } from "@mui/material";
 import GestureButton from "./components/gestureDedector";
-import { Link as RouterLink } from "react-router-dom";
 import GoogleIcon from "@mui/icons-material/Google";
 import colors from "../../../theme/colors";
 import { useNavigate } from "react-router-dom";
 import img100 from "../../../../public/assets/imgs/img100.png";
-import { auth } from "../../../firebase"; // Asegúrate de configurar correctamente tu archivo de Firebase
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
 import { UserContext } from "../../../context/user.provider";
 
 const SignIn = () => {
-  const {login,user,setUser}=useContext(UserContext);
+  const { login, user } = useContext(UserContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null); // Para manejar errores
+  const [error, setError] = useState(null); // Manejar errores
   const [isLoading, setIsLoading] = useState(false); // Indicador de carga
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
@@ -40,18 +33,9 @@ const SignIn = () => {
     setIsLoading(true);
 
     try {
-      console.log(email);
-      console.log(password);
       await login(email, password);
-      console.log("Usuario");
-      console.log(user)
-      console.log("Inicio de sesión exitoso");
-      setIsLoading(false);
-
       navigate("/dashboard");
     } catch (err) {
-      console.error("Error de inicio de sesión:", err.message);
-
       setError(
         err.code === "auth/user-not-found"
           ? "La cuenta no existe. Por favor, regístrate primero."
@@ -61,36 +45,30 @@ const SignIn = () => {
       setIsModalOpen(true);
     }
   };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setError(null);
   };
 
   const handleGoogleSignIn = async () => {
-    // const provider = new GoogleAuthProvider();
-    // setIsLoading(true); // Mostrar el indicador de carga
-    // try {
-    //   await signInWithPopup(auth, provider);
-    //   console.log("Inicio de sesión con Google exitoso");
-    //   setIsLoading(false);
-    // } catch (err) {
-    //   setError("Hubo un problema al iniciar sesión con Google.");
-    //   setIsLoading(false); // Ocultar el indicador de carga
-    // }
+    // Lógica para iniciar sesión con Google (si está habilitada)
   };
 
   return (
     <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        minHeight: "100vh",
-        minWidth: "100vw",
-        background: "#fff",
-      }}
-    >
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+    minHeight: "100vh", 
+    minWidth: "100vw",
+    background: "#fff",
+    overflow:"hidden",
+  }}
+>
+      {/* Modal de error */}
       {isModalOpen && (
         <Box
           sx={{
@@ -101,34 +79,31 @@ const SignIn = () => {
             height: "100%",
             backgroundColor: "rgba(0, 0, 0, 0.5)", // Oscurecer fondo
             zIndex: 10,
-            display: "flex", // Para centrar el contenido
-            alignItems: "center", // Centrar verticalmente
-            justifyContent: "center", // Centrar horizontalmente
+            display: "flex", // Centrar el contenido
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           <Box
             sx={{
-              width: { xs: "80%", sm: "50%", md: "30%" }, // Responsivo
-              backgroundColor: "#fff", // Fondo blanco
-              padding: 4, // Espaciado interno
-              borderRadius: "12px", // Bordes redondeados
-              boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)", // Sombra
-              textAlign: "center", // Centrar texto
+              width: { xs: "80%", sm: "50%", md: "30%" },
+              backgroundColor: "#fff",
+              padding: 4,
+              borderRadius: "12px",
+              boxShadow: "0 8px 20px rgba(0, 0, 0, 0.2)",
+              textAlign: "center",
             }}
           >
-            {/* Título */}
             <Typography
               variant="h6"
               sx={{
                 fontWeight: "bold",
-                color: "#333", // Texto oscuro
+                color: "#333",
                 marginBottom: 2,
               }}
             >
               Error de Inicio de Sesión
             </Typography>
-
-            {/* Mensaje */}
             <Typography
               variant="body1"
               sx={{
@@ -136,9 +111,8 @@ const SignIn = () => {
                 marginBottom: 3,
               }}
             >
-              Las credenciales son incorrectas o la cuenta no existe.
+              {error}
             </Typography>
-
             <Button
               variant="contained"
               onClick={closeModal}
@@ -146,7 +120,7 @@ const SignIn = () => {
                 backgroundColor: "rgba(255, 87, 34, 0.9)",
                 color: "#fff",
                 textTransform: "none",
-                "&:hover": { backgroundColor: "rgba(255, 87, 34, 1)" }, // Naranja oscuro al pasar el mouse
+                "&:hover": { backgroundColor: "rgba(255, 87, 34, 1)" },
               }}
             >
               Aceptar
@@ -154,18 +128,19 @@ const SignIn = () => {
           </Box>
         </Box>
       )}
-      {/* Contenedor general centrado */}
+
+      {/* Contenedor principal */}
       <Grid
         container
         spacing={4}
         sx={{
           maxWidth: "1200px",
-          alignItems: "center",
-          justifyContent: "center",
+          width: "100%", 
+          marginX: "auto", 
+          overflowX: "hidden", 
           position: "relative",
         }}
       >
-        {/* Textos explicativos */}
         <Grid
           item
           xs={12}
@@ -182,12 +157,10 @@ const SignIn = () => {
             }}
           >
             <img
-              src={img100} // Reemplaza con la ruta de tu imagen PNG
+              src={img100}
               alt="TuChambita Header"
               style={{
                 maxWidth: "50vw",
-                marginLeft: "-6vw",
-                marginTop: "2vh",
                 objectFit: "contain",
               }}
             />
@@ -214,20 +187,18 @@ const SignIn = () => {
                 color: colors.secondary.secondary,
               }}
             >
-              <span style={{ fontSize: 16, color: colors.secondary.secondary }}>
-                ⚙️
-              </span>
-              Rendimiento Adaptable
+              ⚙️ Rendimiento Adaptable
             </Typography>
-            <Typography
+            {/* <Typography
               sx={{
                 marginLeft: 3,
                 color: colors.secondary.secondary,
               }}
             >
-              TuChambita se adapta a tus necesidades, mejorando tu experiencia y
-              simplificando tus tareas.
-            </Typography>
+              TuChambita se adapta a tus necesidades, mejorando tu experiencia
+              y simplificando tus tareas.
+            </Typography> */}
+            
           </Box>
 
           <Box sx={{ marginBottom: 2 }}>
@@ -241,51 +212,31 @@ const SignIn = () => {
                 color: colors.secondary.secondary,
               }}
             >
-              <span style={{ fontSize: 16, color: colors.accent.orange }}>
-                🛠️
-              </span>
-              Construido para Durar
+              🛠️ Construido para Durar
             </Typography>
-            <Typography
-              sx={{
-                marginLeft: 3,
-                color: colors.secondary.secondary,
-              }}
-            >
-              Encuentra profesionales calificados y servicios garantizados.
-            </Typography>
+            
           </Box>
-
-          <Box sx={{ marginBottom: 2 }}>
-            <Typography
-              variant="body1"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: colors.secondary.secondary,
-                marginBottom: 2,
-              }}
-            >
-              <span style={{ fontSize: 16, color: colors.accent.orange }}>
-                👍
-              </span>
-              Excelente Experiencia de Usuario
-            </Typography>
-            <Typography
-              sx={{
-                marginLeft: 3,
-                color: colors.secondary.secondary,
-              }}
-            >
-              Navegación intuitiva y servicios de alta calidad para todos tus
-              proyectos.
-            </Typography>
-          </Box>
+          <Typography
+                variant="body2"
+                sx={{
+                  color: colors.accent.orange,
+                  marginTop: 2,
+                  fontSize:18,
+                  cursor: "pointer", // Hace que el mouse muestre el puntero de enlace
+                  textAlign: "start",
+                }}
+                onClick={() => {
+                  navigate("/signup"); // Navega al inicio de sesión
+                }}
+              >
+                ¿No tienes una cuenta? Crea una y unete...
+              </Typography>
         </Grid>
-
-        {/* Formulario de inicio de sesión */}
+          
         <Grid item xs={12} md={6}>
+          <div style={{marginTop:"10vh"}}>
+
+          </div>
           <Paper
             elevation={6}
             sx={{
@@ -319,14 +270,11 @@ const SignIn = () => {
                 >
                   Iniciar Sesión
                 </Typography>
-
-                {/* Formulario */}
                 <Box component="form" onSubmit={handleSignIn}>
                   <TextField
                     fullWidth
                     type="email"
                     label="Correo Electrónico"
-                    placeholder="ejemplo@correo.com"
                     variant="outlined"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -336,7 +284,6 @@ const SignIn = () => {
                     fullWidth
                     type="password"
                     label="Contraseña"
-                    placeholder="••••••••"
                     variant="outlined"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -355,7 +302,7 @@ const SignIn = () => {
                       label="Recuérdame"
                       sx={{ color: colors.neutral.darkGray }}
                     />
-                   <GestureButton />
+                    <GestureButton />
                   </Box>
                   <Button
                     fullWidth
@@ -363,52 +310,12 @@ const SignIn = () => {
                     variant="contained"
                     sx={{
                       backgroundColor: colors.accent.orange,
-                      textTransform: "none",
-                      fontWeight: "bold",
                       color: "#fff",
                       marginBottom: 3,
                     }}
                   >
                     Iniciar Sesión
                   </Button>
-                </Box>
-
-                {/* Divisor */}
-                <Divider sx={{ marginBottom: 3 }}>O</Divider>
-
-                {/* Botones de redes sociales */}
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      startIcon={<GoogleIcon />}
-                      onClick={handleGoogleSignIn}
-                      sx={{
-                        textTransform: "none",
-                        color: colors.neutral.darkGray,
-                        borderColor: colors.neutral.lightGray,
-                        "&:hover": {
-                          backgroundColor: colors.neutral.lightGray,
-                        },
-                      }}
-                    >
-                      Inicia sesión con Google
-                    </Button>
-                  </Grid>
-                </Grid>
-
-                {/* Registro */}
-                <Box sx={{ textAlign: "center", marginTop: 3 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: colors.neutral.darkGray,
-                    }}
-                  >
-                    ¿No tienes una cuenta?{" "}
-                    <GestureButton />
-                  </Typography>
                 </Box>
               </>
             )}

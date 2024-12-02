@@ -32,7 +32,7 @@ import {
 } from "firebase/firestore";
 import { UserContext } from "../../../context/user.provider";
 const SignUp = () => {
-  const { loginForCreation} = useContext(UserContext);
+  const { loginForCreation } = useContext(UserContext);
   // Estado para los pasos
   const [step, setStep] = useState(1);
 
@@ -113,7 +113,11 @@ const SignUp = () => {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user1 = userCredential.user;
 
       // Actualizar el perfil del usuario
@@ -127,8 +131,9 @@ const SignUp = () => {
         descripcion,
         servicios: selectedServices,
         location,
-        rol:"Cliente",
-        correo:email,
+        rol: "Cliente",
+        contactos:[],
+        correo: email,
         uid: user1.uid,
         fechaDeCreacion: new Date(),
       });
@@ -185,6 +190,7 @@ const SignUp = () => {
         minHeight: "100vh",
         minWidth: "100vw",
         background: "#fff",
+        overflow:"hidden",
       }}
     >
       <Grid
@@ -237,6 +243,21 @@ const SignUp = () => {
               >
                 Encuentra a los mejores profesionales o conviértete en uno de
                 ellos.
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: colors.accent.orange,
+                  marginTop: 2,
+                  fontSize:18,
+                  cursor: "pointer", // Hace que el mouse muestre el puntero de enlace
+                  textAlign: "start",
+                }}
+                onClick={() => {
+                  navigate("/signin"); // Navega al inicio de sesión
+                }}
+              >
+                ¿Ya tienes una cuenta? Inicia sesión
               </Typography>
             </Grid>
 

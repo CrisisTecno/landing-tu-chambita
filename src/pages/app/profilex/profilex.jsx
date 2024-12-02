@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -10,64 +12,88 @@ import {
   ListItemAvatar,
   ListItemText,
   Modal,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import colors from "../../../theme/colors";
-import Navbar from "../../../components/app/navbar";
 import { Cloudinary } from "@cloudinary/url-gen";
 import { auto } from "@cloudinary/url-gen/actions/resize";
 import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
 import { AdvancedImage } from "@cloudinary/react";
-import { UserContext } from "../../../context/user.provider";
-import React, { useContext, useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../../../firebase"; // Importa tu configuración de Firestore
+import Navbar from "../../../components/app/navbar";
+import colors from "../../../theme/colors";
 import PublicationsListById from "../../../components/app/publicationListById";
 
-const ProfileView = () => {
-  const { user } = useContext(UserContext); // Acceso al contexto del usuario
+const ProfileXView = () => {
+  const { id } = useParams();
+  const [contact, setContact] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const contactId=user.uid;
+
   useEffect(() => {
-    console.log(user);
-    if (!user) {
-      setOpenModal(true); // Mostrar el modal si no hay usuario
-    }
-  }, [user]);
+    const fetchContact = async () => {
+        console.log(id)
+      try {
+        const contactDoc = doc(db, "usuario", id);
+        const contactSnapshot = await getDoc(contactDoc);
+
+        if (contactSnapshot.exists()) {
+          setContact(contactSnapshot.data());
+        } else {
+          console.error("El contacto no existe.");
+          setError("El perfil solicitado no está disponible.");
+        }
+      } catch (error) {
+        console.error("Error al obtener los datos del contacto:", error);
+        setError("Ocurrió un problema al cargar los datos del perfil.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContact();
+  }, [id]);
 
   const cld = new Cloudinary({
     cloud: {
-      cloudName: "diubghp1i",
+      cloudName: "diubghp1i", // Configuración de Cloudinary
     },
   });
 
   const banner = cld
-    .image(`tu-chambita/profile/${user?.bannerId || "default-banner"}`)
+    .image(`tu-chambita/profile/${contact?.bannerId || "default-banner"}`)
     .format("auto")
     .quality("auto")
     .resize(auto().gravity(autoGravity()).width(1000).height(400));
 
   const profile = cld
-    .image(`tu-chambita/profile/${user?.profileId || "default-profile"}`)
+    .image(`tu-chambita/profile/${contact?.profileId || "default-profile"}`)
     .format("auto")
     .quality("auto")
     .resize(auto().gravity(autoGravity()).width(500).height(500));
 
-  return (
-    <Box
-      sx={{
-        alignItems: "center",
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        minWidth: "100vw",
-        backgroundColor: colors.secondary.main,
-      }}
-    >
-      {/* Navbar */}
-      <Box sx={{ marginBottom: "8vh" }}>
-        <Navbar />
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <CircularProgress sx={{ color: colors.primary.main }} />
+        <Typography sx={{ marginLeft: 2, color: colors.primary.main }}>
+          Cargando perfil...
+        </Typography>
       </Box>
+    );
+  }
 
-      {/* Modal de error */}
+  if (error) {
+    return (
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{
@@ -84,11 +110,7 @@ const ProfileView = () => {
           }}
         >
           <Typography variant="h6" color="error" sx={{ fontWeight: "bold" }}>
-            Error al cargar el perfil
-          </Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ my: 2 }}>
-            Ocurrió un problema al cargar los datos del usuario. Por favor,
-            intenta nuevamente.
+            {error}
           </Typography>
           <Button
             variant="contained"
@@ -105,6 +127,24 @@ const ProfileView = () => {
           </Button>
         </Box>
       </Modal>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        minWidth: "100vw",
+        backgroundColor: colors.secondary.main,
+      }}
+    >
+      {/* Navbar */}
+      <Box sx={{ marginBottom: "8vh" }}>
+        <Navbar />
+      </Box>
 
       {/* Perfil y detalles principales */}
       <Paper
@@ -137,7 +177,7 @@ const ProfileView = () => {
           />
         </Box>
 
-        {/* Avatar y Detalles del Usuario */}
+        {/* Avatar y Detalles del Contacto */}
         <Box
           sx={{
             display: "flex",
@@ -173,23 +213,23 @@ const ProfileView = () => {
               fontWeight="bold"
               color={colors.primary.main}
             >
-              {user?.nombre || "Usuario"}
+              {contact?.nombre || "Usuario"}
             </Typography>
             <Typography variant="body2" color="#6e6e6e" fontSize={17}>
-              {user?.descripcion || "Sin descripción"}
+              {contact?.descripcion || "Sin descripción"}
             </Typography>
             <Typography
               variant="body2"
               color={colors.accent.orangeHover}
               fontSize={18}
             >
-              {user?.ubicacion
-                ? `${user.ubicacion._lat}, ${user.ubicacion._long}`
+              {contact?.ubicacion
+                ? `${contact.ubicacion._lat}, ${contact.ubicacion._long}`
                 : "Ubicación desconocida"}
             </Typography>
           </Box>
 
-          {/* Botón Editar */}
+          {/* Botón para conectar */}
           <Button
             variant="outlined"
             startIcon={<EditIcon />}
@@ -209,11 +249,10 @@ const ProfileView = () => {
               },
             }}
           >
-            Mejorar perfil
+            Conectar
           </Button>
         </Box>
       </Paper>
-
       <Divider sx={{ marginY: 4 }} />
 
       {/* Contenedor de Sugerencias y Usuarios */}
@@ -280,7 +319,7 @@ const ProfileView = () => {
               apariciones en búsquedas.
             </Typography>
           </Paper>
-          <PublicationsListById id={contactId} />
+          <PublicationsListById id={id} />
         </Box>
 
         {/* Sección Derecha */}
@@ -329,4 +368,4 @@ const ProfileView = () => {
   );
 };
 
-export default ProfileView;
+export default ProfileXView;

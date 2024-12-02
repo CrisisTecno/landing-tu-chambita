@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -6,18 +6,59 @@ import {
   Modal,
   Avatar,
   Button,
-  Grid,
 } from "@mui/material";
-import PublicationCard from "./publishCard"; // Componente individual de publicación
-import { PublicationsContext } from "../../../../context/publication.provider"; // Contexto de publicaciones
-import colors from "../../../../theme/colors";
-import { useNavigate } from "react-router-dom";
+import PublicationCard from "../../pages/app/dashboard/components/publishCard"; // Componente individual de publicación
+import colors from "../../../src/theme/colors";
+import { db } from "../../../src/firebase"; // Configuración de Firebase
+import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 
-const PublicationsList2 = () => {
-  const navigate= useNavigate();
-  const { publications, isLoading } = useContext(PublicationsContext);
+const PublicationsListById = ({ id }) => {
+  const [publications, setPublications] = useState([]); // Lista de publicaciones
+  const [isLoading, setIsLoading] = useState(true); // Estado de carga
   const [selectedPublication, setSelectedPublication] = useState(null); // Publicación seleccionada para mostrar en el modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado del modal
+
+  useEffect(() => {
+    const fetchPublicationsById = async () => {
+      if (!id) return;
+
+      try {
+        setIsLoading(true);
+        console.log(id)
+        // Consulta a Firestore para obtener publicaciones por `autorId`
+        const publicationsRef = collection(db, "publicacion");
+        // const publicationsQuery = query(
+        //   publicationsRef,
+        //   where("autorId", "==", id),
+        //   orderBy("fechaDeCreacion", "desc")
+        // );
+
+        const publicationsQuery = query(
+            publicationsRef,
+            where("autor.uid", "==", id), // Usamos `autor.uid` según la imagen
+         
+          );
+
+        const snapshot = await getDocs(publicationsQuery);
+
+        // Transformar los datos en un array
+        const fetchedPublications = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setPublications(fetchedPublications);
+        console.log(publications)
+      } catch (error) {
+        console.error("Error al obtener publicaciones por ID:", error.message);
+        setPublications([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPublicationsById();
+  }, [id]);
 
   // Funciones para abrir y cerrar el modal
   const handleOpenModal = (publication) => {
@@ -40,15 +81,21 @@ const PublicationsList2 = () => {
           marginBottom: 4,
           textAlign: "start",
         }}
-       
       >
-        También tenemos estas publicaciones
+        Publicaciones del Usuario
       </Typography>
 
       {isLoading ? (
         <Box sx={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
           <CircularProgress color="primary" />
         </Box>
+      ) : publications.length === 0 ? (
+        <Typography
+          variant="body2"
+          sx={{ color: colors.secondary.secondary, textAlign: "center" }}
+        >
+          No se encontraron publicaciones para este usuario.
+        </Typography>
       ) : (
         <Box>
           {publications.map((pub) => (
@@ -69,7 +116,6 @@ const PublicationsList2 = () => {
                 reviewData={{
                   avatar: pub.autor?.avatar,
                   name: pub.autor?.nombre,
-                  id:pub.autor?.uid,
                   rating: pub.autor?.calificacion,
                   totalReviews: pub.autor?.totalVistas,
                 }}
@@ -97,8 +143,7 @@ const PublicationsList2 = () => {
           {selectedPublication && (
             <Box
               sx={{
-                backgroundColor: "#6e6e6e",
-                bgcolor: "background.paper",
+                backgroundColor: "#fff",
                 borderRadius: "16px",
                 boxShadow: 24,
                 padding: 4,
@@ -125,8 +170,7 @@ const PublicationsList2 = () => {
                 <Box>
                   <Typography
                     variant="h6"
-                    sx={{ fontWeight: "bold", color: "#000",cursor:"pointer" }}
-                    onClick={() => navigate(`/profilex/${selectedPublication.autor?.uid}`)} 
+                    sx={{ fontWeight: "bold", color: "#000" }}
                   >
                     {selectedPublication.autor?.nombre || "Usuario Desconocido"}
                   </Typography>
@@ -145,7 +189,7 @@ const PublicationsList2 = () => {
                   variant="h6"
                   sx={{
                     fontWeight: "bold",
-                    color: "#6e6e6e",
+                    color: colors.accent.orange,
                   }}
                 >
                   {selectedPublication.contenido || "Sin descripción"}
@@ -156,11 +200,6 @@ const PublicationsList2 = () => {
                   sx={{ color: colors.neutral.darkGray, marginTop: 2 }}
                 >
                   Categorías:{" "}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: colors.accent.orange, marginTop: 2 }}
-                >
                   {selectedPublication.categorias
                     ? selectedPublication.categorias.join(", ")
                     : "Sin Categoría"}
@@ -201,12 +240,7 @@ const PublicationsList2 = () => {
                 <Button
                   variant="contained"
                   sx={{
-                    borderRadius: "2vw",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: "1rem",
-                    width: "100%",
-                    height: "48px",
+                    borderRadius: "12px",
                     backgroundColor: colors.accent.orange,
                     textTransform: "none",
                     "&:hover": { backgroundColor: colors.accent.orangeHover },
@@ -224,4 +258,4 @@ const PublicationsList2 = () => {
   );
 };
 
-export default PublicationsList2;
+export default PublicationsListById;

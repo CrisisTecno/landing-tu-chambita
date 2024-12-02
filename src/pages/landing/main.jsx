@@ -9,67 +9,81 @@ import Features from "../../components/landing/features";
 import PromotionalBanner from "../../components/landing/promotionBanner";
 import img69 from "../../../public/assets/imgs/img69.png";
 import img89 from "../../../public/assets/imgs/img89.png";
-import { Box, Typography, Button } from "@mui/material";
+import { Box } from "@mui/material";
+
 const LandingPage = () => {
   return (
-    <>
+    <Box
+      sx={{
+        overflowX: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      {/* Navbar */}
       <Navbar />
-      <div
-        style={{
+
+      {/* Contenido principal */}
+      <Box
+        sx={{
           marginTop: "3vh",
+          width: "100%", // Asegura que ocupe el ancho completo
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: "5vh", // Ocupa todo el ancho
+          gap: "5vh", // Espaciado entre secciones
         }}
       >
         {/* Sección Home */}
-        <section
-          id="incio"
-          style={{
+        <Box
+          id="inicio"
+          sx={{
             position: "relative",
-            background: "#f3f4f6",
+            backgroundColor: "#f3f4f6",
+            width: "100%", // Ancho completo
+            overflow: "hidden",
           }}
         >
           <HeroSection />
 
-          {/* ProfileCard sobrepuesta */}
-          <div
-            style={{
+          {/* Tarjeta de perfil sobrepuesta */}
+          <Box
+            sx={{
               position: "absolute",
-              top: "100%",
-              left: "75%",
+              top: "85%",
+              left: "72%",
               transform: "translate(-50%, -50%)",
-              zIndex: 10,
+              zIndex: 100,
             }}
           >
+            
             <ProfileCard />
-          </div>
-        </section>
+          </Box>
+        </Box>
 
-        {/* Sección Services */}
-        <section>
-          <section
-            id="caracteristicas"
-            style={{
-              background: "#FFF",
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "60vh",
-              width: "100%",
-              overflow: "hidden",
-            }}
-          >
-            <Features />
-          </section>
+        {/* Sección Características */}
+        <Box
+          id="caracteristicas"
+          sx={{
+            backgroundColor: "#fff",
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "60vh",
+            width: "100%",
+          }}
+        >
+          <Features />
+
+          {/* Imagen decorativa */}
           <img
             src={img69}
             alt="TuChambita Hero"
             style={{
               position: "absolute",
-              top: "50%",
+              top: "-20%",
               left: "0%",
               zIndex: 1,
               maxWidth: "40vw",
@@ -77,38 +91,59 @@ const LandingPage = () => {
               pointerEvents: "none",
             }}
           />
-        </section>
+        </Box>
 
-        {/* Otras Secciones */}
-        <section id="teams" style={{ background: "#fff", width: "100%" }}>
+        {/* Sección Promocional */}
+        <Box
+          id="teams"
+          sx={{
+            backgroundColor: "#fff",
+            width: "100%",
+            position: "relative",
+          }}
+        >
           <PromotionalBanner />
-        
-            <img
-              src={img89} // Ruta de la imagen
-              alt="Promoción TuChambita"
-              style={{
-                position: "absolute",
-                top: "125%",
-                left: "80%",
-                width: "100%",
-                marginRigth: "-10vw",
-                marginLeft: "-10vw",
-                maxWidth: "30vw",
-                objectFit: "cover",
-              }}
-            />
-        
-        </section>
-        <section id="servicios" style={{ background: "#f3f4f6", width: "100%" }}>
-        
-        <Services />
-        </section>
-        <section id="preguntas" style={{ background: "#f3f4f6", width: "100%" }}>
+
+          {/* Imagen decorativa */}
+          <img
+            src={img89}
+            alt="Promoción TuChambita"
+            style={{
+              position: "absolute",
+              top: "-28%", // Ajusta según la posición deseada
+              right: "0%", // Controla la posición horizontal
+              maxWidth: "30vw",
+              objectFit: "cover",
+            }}
+          />
+        </Box>
+
+        {/* Sección Servicios */}
+        <Box
+          id="servicios"
+          sx={{
+            backgroundColor: "#f3f4f6",
+            width: "100%",
+          }}
+        >
+          <Services />
+        </Box>
+
+        {/* Sección FAQ */}
+        <Box
+          id="preguntas"
+          sx={{
+            backgroundColor: "#f3f4f6",
+            width: "100%",
+          }}
+        >
           <FAQ />
-        </section>
+        </Box>
+
+        {/* Footer */}
         <Footer />
-      </div>
-    </>
+      </Box>
+    </Box>
   );
 };
 

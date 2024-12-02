@@ -46,7 +46,7 @@ const Dashboard = () => {
             margin: "1vw",
             position: "sticky", // Sticky behavior
             top: "8vh",
-            height: "82vh", // Altura total menos el navbar
+            height: "89vh", // Altura total menos el navbar
             overflowY: "auto", // Permite scroll si el contenido es grande
             backgroundColor: "#fff",
             borderRadius: "12px",

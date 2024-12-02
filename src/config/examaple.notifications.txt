@@ -1,0 +1,17 @@
+/posts (colección)
+    /{postId}
+        /notifications (subcolección)
+            /{notificationId}
+                - userId: "USER_ID"
+                - content: "Juan comentó tu publicación"
+                - isRead: false
+                - timestamp: { seconds, nanos }
+
+/messages (colección)
+    /{messageId}
+        /notifications (subcolección)
+            /{notificationId}
+                - userId: "USER_ID"
+                - content: "Tienes un nuevo mensaje"
+                - isRead: false
+                - timestamp: { seconds, nanos }

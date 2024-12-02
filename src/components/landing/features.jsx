@@ -111,7 +111,7 @@ const Features = () => {
                 variant="body2"
                 sx={{
                   color: colors.neutral.darkGray,
-                  "&:hover": { color: "#fff" },
+               
                 }}
               >
                 {feature.description}

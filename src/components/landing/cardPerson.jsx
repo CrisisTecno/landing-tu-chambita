@@ -12,7 +12,7 @@ const ProfileCard = () => {
         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
         overflow: "hidden",
         width: "40vw",
-        height:"15vh",
+        height:"20vh",
         maxWidth: "800px",
         margin: "0 auto",
         padding: { xs: 2, sm: 4 },

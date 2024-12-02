@@ -6,6 +6,7 @@ import {
   Button,
   Avatar,
   Divider,
+  Modal,
 } from "@mui/material";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../../src/firebase";
@@ -20,10 +21,12 @@ const Explore = () => {
   const { publications, isLoading, fiveFirst } =
     useContext(PublicationsContext);
   const [serviceProviders, setServiceProviders] = useState([]);
+  const [selectedPublication, setSelectedPublication] = useState(null); // Estado para el modal
+  const [isModalOpen, setIsModalOpen] = useState(false); // Estado de apertura del modal
+
   const formatDate = (timestamp) => {
     if (!timestamp) return "Sin fecha";
 
-    // Convertimos el timestamp de Firestore a un objeto `Date`
     const date = timestamp.toDate(); // Método Firestore
     return date.toLocaleDateString("es-ES", {
       year: "numeric",
@@ -31,6 +34,7 @@ const Explore = () => {
       day: "numeric",
     });
   };
+
   // Obtener categorías desde Firestore
   useEffect(() => {
     const fetchCategories = async () => {
@@ -104,6 +108,16 @@ const Explore = () => {
     return colorsList[randomIndex];
   };
 
+  const handleOpenModal = (publication) => {
+    setSelectedPublication(publication);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPublication(null);
+    setIsModalOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -121,6 +135,7 @@ const Explore = () => {
         variant="h4"
         sx={{
           fontWeight: "bold",
+          fontSize: 24,
           color: colors.primary.main,
           marginBottom: "24px",
         }}
@@ -197,7 +212,11 @@ const Explore = () => {
             }}
           >
             <CardContent>
-              <Box display={"flex"} justifyContent={"space-between"} alignItems={"center"}>
+              <Box
+                display={"flex"}
+                justifyContent={"space-between"}
+                alignItems={"center"}
+              >
                 <Typography
                   variant="h6"
                   sx={{ fontWeight: "bold", color: colors.accent.orange }}
@@ -212,8 +231,9 @@ const Explore = () => {
                     marginLeft: 2,
                   }}
                 >
-                  {service.fechaDeCreacion ? formatDate(service.fechaDeCreacion) : "Sin fecha"}{" "}
-                  {/* Formatear la fecha */}
+                  {service.fechaDeCreacion
+                    ? formatDate(service.fechaDeCreacion)
+                    : "Sin fecha"}{" "}
                 </Typography>
               </Box>
 
@@ -237,6 +257,7 @@ const Explore = () => {
                   marginTop: "16px",
                   textTransform: "none",
                 }}
+                onClick={() => handleOpenModal(service)}
               >
                 Ver más
               </Button>
@@ -244,6 +265,111 @@ const Explore = () => {
           </Box>
         ))}
       </Box>
+
+      {/* Modal para mostrar los detalles de la publicación */}
+      <Modal open={isModalOpen} onClose={handleCloseModal}>
+        <Box
+          sx={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "#fff",
+            borderRadius: "16px",
+            boxShadow: 24,
+            padding: 4,
+            width: { xs: "90%", md: "60%" },
+            maxHeight: "90vh",
+            overflowY: "auto",
+          }}
+        >
+          {selectedPublication && (
+            <>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <Avatar
+                  src={
+                    selectedPublication.autor?.avatar ||
+                    "/assets/default-avatar.png"
+                  }
+                  alt={selectedPublication.autor?.nombre || "Sin Nombre"}
+                  sx={{ width: 60, height: 60 }}
+                />
+                <Box>
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: "bold", color: colors.primary.main }}
+                  >
+                    {selectedPublication.autor?.nombre || "Usuario Desconocido"}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: colors.neutral.darkGray }}
+                  >
+                    {selectedPublication.autor?.rol || "Rol desconocido"}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: "bold",
+                  color: colors.accent.orange,
+                  marginTop: 2,
+                }}
+              >
+                {selectedPublication.contenido || "Sin descripción"}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{ color: colors.neutral.darkGray, marginTop: 2 }}
+              >
+                Categorías:{" "}
+                {selectedPublication.categorias
+                  ? selectedPublication.categorias.join(", ")
+                  : "Sin Categoría"}
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{ color: colors.neutral.darkGray, marginTop: 1 }}
+              >
+                Ubicación: {selectedPublication.ubicacion || "No especificada"}
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  marginTop: 4,
+                  width: "100%",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  sx={{
+                    color:"#fff",
+                    borderRadius: "12px",
+                    width:"80%",
+                    backgroundColor: colors.accent.orange,
+                    textTransform: "none",
+                    "&:hover": { backgroundColor: colors.accent.orangeHover },
+                  }}
+                  onClick={handleCloseModal}
+                >
+                  Cerrar
+                </Button>
+              </Box>
+            </>
+          )}
+        </Box>
+      </Modal>
 
       <Divider sx={{ marginY: "24px" }} />
 

@@ -1,11 +1,8 @@
 import React from "react";
 import { Box, Typography, Avatar, Rating } from "@mui/material";
 import colors from "../../../../theme/colors";
-const ReviewWidget = ({ avatar, name, rating, totalReviews }) => {
-  console.log(avatar)
-  console.log(name)
-  console.log(rating)
-  console.log(totalReviews)
+const ReviewWidget = ({ avatar, name, rating, totalReviews,id }) => {
+
   return (
     <Box
       sx={{
@@ -39,6 +36,7 @@ const ReviewWidget = ({ avatar, name, rating, totalReviews }) => {
         <Typography
           variant="subtitle1"
           sx={{ fontWeight: "bold", color: colors.neutral.darkGray }}
+ 
         >
           {name}
         </Typography>
