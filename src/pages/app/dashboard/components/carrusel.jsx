@@ -73,21 +73,18 @@ const ReviewsCarousel = () => {
         Opiniones de nuestros usuarios
       </Typography>
 
-      {/* Rating general */}
 
-
-      {/* Carrusel de reseñas */}
       <Box
         ref={carouselRef}
         sx={{
           display: "flex",
-          overflowX: "auto", // Habilitar desplazamiento horizontal
+          overflowX: "auto", 
           gap: 3,
           scrollBehavior: "smooth",
           paddingBottom: 4,
           paddingTop:4,
           "&::-webkit-scrollbar": {
-            display: "none", // Ocultar scrollbar en navegadores compatibles
+            display: "none", 
           },
         }}
       >

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -54,7 +54,10 @@ const ContactPage = () => {
       mutualConnections: 5,
     },
   ]);
-
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+  
   return (
     <Box
       sx={{

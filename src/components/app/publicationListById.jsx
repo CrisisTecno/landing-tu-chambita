@@ -66,7 +66,7 @@ const PublicationsListById = ({ id }) => {
   };
 
   return (
-    <Box sx={{ padding: 4 }}>
+    <Box sx={{ padding: 4 ,marginLeft:"-2vw"}}>
       <Typography
         variant="h5"
         sx={{

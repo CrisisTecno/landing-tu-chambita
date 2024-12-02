@@ -11,9 +11,11 @@ import PublicationCard from "./publishCard"; // Componente individual de publica
 import { PublicationsContext } from "../../../../context/publication.provider"; // Contexto de publicaciones
 import colors from "../../../../theme/colors";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../../context/user.provider";
 
 const PublicationsList = () => {
-  const navigate= useNavigate();
+  const {user}=useContext(UserContext)
+  const navigate = useNavigate();
   const { isLoading, fiveFirst } = useContext(PublicationsContext);
   const [selectedPublication, setSelectedPublication] = useState(null); // Publicación seleccionada para mostrar en el modal
   const [isModalOpen, setIsModalOpen] = useState(false); // Estado del modal
@@ -94,7 +96,7 @@ const PublicationsList = () => {
           {selectedPublication && (
             <Box
               sx={{
-                     backgroundColor: "#6e6e6e",
+                backgroundColor: "#6e6e6e",
                 bgcolor: "background.paper",
                 borderRadius: "16px",
                 boxShadow: 24,
@@ -117,17 +119,27 @@ const PublicationsList = () => {
                     "/assets/default-avatar.png"
                   }
                   alt={selectedPublication.autor?.nombre || "Sin Nombre"}
-                  sx={{ width: 60, height: 60 }}  
-             
+                  sx={{ width: 60, height: 60 }}
                 />
                 <Box>
                   <Typography
                     variant="h6"
-                    sx={{ fontWeight: "bold", color: "#000" }}
-                    onClick={() => navigate(`/profilex/${selectedPublication.autor?.uid}`)} 
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#000",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      if (selectedPublication.autor?.uid === user?.uid) {
+                        navigate("/profile"); // Redirige al perfil del usuario logueado
+                      } else {
+                        navigate(`/profilex/${selectedPublication.autor?.uid}`); // Redirige al perfil de un contacto
+                      }
+                    }}
                   >
                     {selectedPublication.autor?.nombre || "Usuario Desconocido"}
                   </Typography>
+
                   <Typography
                     variant="body2"
                     sx={{ color: colors.neutral.darkGray }}
@@ -197,7 +209,7 @@ const PublicationsList = () => {
                     borderRadius: "12px",
                     backgroundColor: colors.accent.orange,
                     textTransform: "none",
-                    color:"#fff",
+                    color: "#fff",
                     "&:hover": { backgroundColor: colors.accent.orangeHover },
                   }}
                   onClick={handleCloseModal}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import {
   Box,
@@ -7,34 +7,101 @@ import {
   Button,
   Paper,
   Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
+  CircularProgress,TextField,
   Modal,
-  CircularProgress,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import { Cloudinary } from "@cloudinary/url-gen";
 import { auto } from "@cloudinary/url-gen/actions/resize";
 import { autoGravity } from "@cloudinary/url-gen/qualifiers/gravity";
 import { AdvancedImage } from "@cloudinary/react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../../firebase"; // Importa tu configuración de Firestore
+import { db } from "../../../firebase"; // Firestore config
 import Navbar from "../../../components/app/navbar";
 import colors from "../../../theme/colors";
 import PublicationsListById from "../../../components/app/publicationListById";
+import AnalysisComponent from "./components/AnalysisComponent";
+import SuggestionsComponent from "./components/SuggestionsComponent";
+import { UserContext } from "../../../context/user.provider";
+import { doc, getDoc, updateDoc, setDoc, collection, addDoc, serverTimestamp,arrayUnion } from "firebase/firestore";
 
 const ProfileXView = () => {
   const { id } = useParams();
+  const { user, reloadUser } = useContext(UserContext); 
   const [contact, setContact] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnectingMessage, setIsConnectingMessage] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalMessageOpen, setIsModalMessageOpen] = useState(false);
+  const [connectionSuccess, setConnectionSuccess] = useState(false); 
+  const [connectionSuccessMessage, setConnectionSuccessMessage] = useState(false); 
 
+  const sendMessage = async () => {
+    if (!user || !id || message.trim() === "") {
+      console.error("Datos incompletos para enviar el mensaje.");
+      return;
+    }
+  
+    try {
+      setIsConnectingMessage(true);
+      setConnectionSuccessMessage(false);
+  
+      const chatId = user.uid < id ? `${user.uid}_${id}` : `${id}_${user.uid}`; 
+      const chatDocRef = doc(db, "mensaje", chatId); 
+  
+      const chatSnapshot = await getDoc(chatDocRef);
+  
+      if (!chatSnapshot.exists()) {
+        await setDoc(chatDocRef, {
+          creado: serverTimestamp(),
+          ultimaActualizacion: serverTimestamp(),
+          usuarios: [user.uid, id],
+          ultimoMensaje: {
+            texto: message,
+            usuario: user.uid,
+            fecha: serverTimestamp(),
+          },
+        });
+      } else {
+        await updateDoc(chatDocRef, {
+          ultimaActualizacion: serverTimestamp(),
+          ultimoMensaje: {
+            texto: message,
+            usuario: user.uid,
+            fecha: serverTimestamp(),
+          },
+        });
+      }
+  
+      const mensajesCollectionRef = collection(chatDocRef, "mensajes");
+      await addDoc(mensajesCollectionRef, {
+        emisor: user.uid,
+        texto: message,
+        fecha: serverTimestamp(),
+      });
+  
+      setConnectionSuccessMessage(true);
+      console.log("Mensaje enviado con éxito.");
+      setMessage(""); 
+    } catch (error) {
+      console.error("Error al enviar el mensaje:", error.message);
+    } finally {
+      setIsConnectingMessage(false);
+      if (connectionSuccessMessage) {
+        setIsModalMessageOpen(false); // Cerrar el modal si el mensaje fue enviado exitosamente
+      }
+    }
+  };
+  
+
+
+  
   useEffect(() => {
+   
+        window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    
+      
     const fetchContact = async () => {
-        console.log(id)
       try {
         const contactDoc = doc(db, "usuario", id);
         const contactSnapshot = await getDoc(contactDoc);
@@ -43,11 +110,9 @@ const ProfileXView = () => {
           setContact(contactSnapshot.data());
         } else {
           console.error("El contacto no existe.");
-          setError("El perfil solicitado no está disponible.");
         }
       } catch (error) {
         console.error("Error al obtener los datos del contacto:", error);
-        setError("Ocurrió un problema al cargar los datos del perfil.");
       } finally {
         setIsLoading(false);
       }
@@ -58,7 +123,7 @@ const ProfileXView = () => {
 
   const cld = new Cloudinary({
     cloud: {
-      cloudName: "diubghp1i", // Configuración de Cloudinary
+      cloudName: "diubghp1i",
     },
   });
 
@@ -73,6 +138,43 @@ const ProfileXView = () => {
     .format("auto")
     .quality("auto")
     .resize(auto().gravity(autoGravity()).width(500).height(500));
+
+  // Agregar contacto
+  const handleAddContact = async () => {
+    if (!user || !id) return;
+
+    try {
+      setIsConnecting(true);
+      setConnectionSuccess(false);
+
+      const userDoc = doc(db, "usuario", user.uid);
+      await updateDoc(userDoc, {
+        contactos: arrayUnion(id),
+      });
+
+      await reloadUserFromFirestore();
+
+      setConnectionSuccess(true); // Mostrar éxito
+    } catch (error) {
+      console.error("Error al agregar el contacto:", error.message);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  // Recargar estado del usuario en el contexto
+  const reloadUserFromFirestore = async () => {
+    try {
+      const userDoc = doc(db, "usuario", user.uid);
+      const userSnapshot = await getDoc(userDoc);
+
+      if (userSnapshot.exists()) {
+        reloadUser(userSnapshot.data()); // Actualizar el contexto del usuario
+      }
+    } catch (error) {
+      console.error("Error al recargar el usuario:", error.message);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -92,44 +194,6 @@ const ProfileXView = () => {
     );
   }
 
-  if (error) {
-    return (
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: "60%", md: "40%" },
-            bgcolor: "background.paper",
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h6" color="error" sx={{ fontWeight: "bold" }}>
-            {error}
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => setOpenModal(false)}
-            sx={{
-              textTransform: "none",
-              fontWeight: "bold",
-              backgroundColor: colors.accent.orange,
-              color: "#fff",
-              "&:hover": { backgroundColor: colors.accent.orangeHover },
-            }}
-          >
-            Cerrar
-          </Button>
-        </Box>
-      </Modal>
-    );
-  }
-
   return (
     <Box
       sx={{
@@ -141,12 +205,8 @@ const ProfileXView = () => {
         backgroundColor: colors.secondary.main,
       }}
     >
-      {/* Navbar */}
-      <Box sx={{ marginBottom: "8vh" }}>
-        <Navbar />
-      </Box>
+      <Navbar />
 
-      {/* Perfil y detalles principales */}
       <Paper
         elevation={3}
         sx={{
@@ -154,9 +214,9 @@ const ProfileXView = () => {
           borderRadius: 2,
           backgroundColor: "#fff",
           overflow: "hidden",
+          marginTop: 6,
         }}
       >
-        {/* Banner */}
         <Box
           sx={{
             width: "70vw",
@@ -177,7 +237,6 @@ const ProfileXView = () => {
           />
         </Box>
 
-        {/* Avatar y Detalles del Contacto */}
         <Box
           sx={{
             display: "flex",
@@ -229,10 +288,8 @@ const ProfileXView = () => {
             </Typography>
           </Box>
 
-          {/* Botón para conectar */}
           <Button
             variant="outlined"
-            startIcon={<EditIcon />}
             sx={{
               marginTop: "5vh",
               color: colors.accent.orange,
@@ -244,126 +301,245 @@ const ProfileXView = () => {
                 backgroundColor: colors.accent.orange,
                 color: "#fff",
               },
-              "&:focus": {
+            }}
+            onClick={() => setIsModalMessageOpen(true)}
+          >
+            Mensajear
+          </Button>
+
+          <Button
+            variant="outlined"
+            sx={{
+              marginTop: "5vh",
+              color: colors.accent.orange,
+              borderColor: colors.accent.orange,
+              marginLeft: "1vw",
+              textTransform: "none",
+              "&:hover": {
                 outline: "none",
+                border: "none",
+                backgroundColor: colors.accent.orange,
+                color: "#fff",
               },
             }}
+            onClick={() => setIsModalOpen(true)}
           >
             Conectar
           </Button>
         </Box>
       </Paper>
+
       <Divider sx={{ marginY: 4 }} />
 
-      {/* Contenedor de Sugerencias y Usuarios */}
       <Box
         sx={{
           display: "flex",
           flexDirection: { xs: "column", md: "row" },
           gap: 2,
+          width: "70vw",
         }}
       >
-        {/* Sección Izquierda */}
         <Box sx={{ flex: 1 }}>
-          <Paper
-            elevation={3}
-            sx={{ padding: 2, borderRadius: 2, backgroundColor: "#fff" }}
-          >
-            <Typography variant="h6" fontWeight="bold">
-              Sugerencia para ti
-            </Typography>
-            <Divider sx={{ marginY: 2 }} />
-            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Box>
-                <Typography variant="body1" fontWeight="bold">
-                  Mejora tu perfil con ayuda de la IA
-                </Typography>
-                <Typography variant="body2" color={colors.neutral.darkGray}>
-                  Destaca en casi el doble de oportunidades con un perfil más
-                  potente.
-                </Typography>
-              </Box>
+          <AnalysisComponent />
+          <PublicationsListById id={id} />
+        </Box>
+        <Box sx={{ flex: 0.4 }}>
+          <SuggestionsComponent services={contact?.categorias || []} />
+        </Box>
+      </Box>
+
+      {/* Modal de conexión */}
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            textAlign: "center",
+            width: { xs: "80%", sm: "50%", md: "30%" },
+          }}
+        >
+          {isConnecting ? (
+            <Box sx={{ textAlign: "center" }}>
+              <CircularProgress color="primary" />
+              <Typography sx={{ marginTop: 2 }}>
+                Procesando conexión...
+              </Typography>
+            </Box>
+          ) : connectionSuccess ? (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                ¡Conexión exitosa! 🎉 Continúa explorando TuChambita.
+              </Typography>
               <Button
                 variant="contained"
                 sx={{
+                  marginTop: 2,
                   backgroundColor: colors.accent.orange,
                   color: "#fff",
                   textTransform: "none",
-                  fontWeight: "bold",
                   "&:hover": {
                     backgroundColor: colors.accent.orangeHover,
                   },
                 }}
+                onClick={() => setIsModalOpen(false)}
               >
-                Probar Premium por 0 USD
+                Cerrar
               </Button>
             </Box>
-          </Paper>
-
-          {/* Análisis */}
-          <Paper
-            elevation={3}
-            sx={{
-              padding: 2,
-              marginTop: 2,
-              borderRadius: 2,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Typography variant="h6" fontWeight="bold">
-              Análisis
-            </Typography>
-            <Divider sx={{ marginY: 2 }} />
-            <Typography variant="body2" color={colors.neutral.darkGray}>
-              2 visualizaciones del perfil · 0 impresiones de tu publicación · 2
-              apariciones en búsquedas.
-            </Typography>
-          </Paper>
-          <PublicationsListById id={id} />
+          ) : (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Confirmar conexión
+              </Typography>
+              <Typography sx={{ my: 2 }}>
+                ¿Deseas agregar a {contact?.nombre || "este usuario"} a tus
+                contactos?
+              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: colors.accent.orange,
+                    color: "#fff",
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      backgroundColor: colors.accent.orangeHover,
+                    },
+                  }}
+                  onClick={handleAddContact}
+                >
+                  Sí, Conectar
+                </Button>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    color: colors.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Cancelar
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
-
-        {/* Sección Derecha */}
-        <Box sx={{ flex: 0.4 }}>
-          <Paper
-            elevation={3}
-            sx={{
-              padding: 2,
-              borderRadius: 2,
-              backgroundColor: "#fff",
-            }}
-          >
-            <Typography variant="h6" fontWeight="bold">
-              Usuarios que también vieron
-            </Typography>
-            <List>
-              {[1, 2, 3].map((_, index) => (
-                <ListItem key={index}>
-                  <ListItemAvatar>
-                    <Avatar src={`https://via.placeholder.com/48`} />
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary="Sebastian Silva"
-                    secondary="Full Stack Developer | JavaScript | Node.js"
-                  />
-                  <Button
-                    variant="outlined"
-                    sx={{
+      </Modal>
+      <Modal
+        open={isModalMessageOpen}
+        onClose={() => setIsModalMessageOpen(false)}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+            textAlign: "center",
+            width: { xs: "80%", sm: "50%", md: "30%" },
+          }}
+        >
+          {isConnectingMessage ? (
+            <Box sx={{ textAlign: "center" }}>
+              <CircularProgress color="primary" />
+              <Typography sx={{ marginTop: 2 }}>
+                Enviando Mensaje
+              </Typography>
+            </Box>
+          ) : connectionSuccessMessage ? (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                ¡Exito! 🎉 Continúa la conversacion en la Mensajeria.
+              </Typography>
+              <Button
+                variant="contained"
+                sx={{
+                  marginTop: 2,
+                  backgroundColor: colors.accent.orange,
+                  color: "#fff",
+                  textTransform: "none",
+                  "&:hover": {
+                    backgroundColor: colors.accent.orangeHover,
+                  },
+                }}
+                onClick={() => setIsModalMessageOpen(false)}
+              >
+                Cerrar
+              </Button>
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                Comenzemos con las negociaciones
+              </Typography>
+              <Typography sx={{ my: 2 }}>
+                Envia un mensaje a {contact?.nombre || "este usuario"} para
+                iniciar una conversacion
+              </Typography>
+              <TextField
+                fullWidth
+                label="Mensaje de Invitacion"
+                placeholder="Hola, me interesa el servicio de..."
+                variant="outlined"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                sx={{
+                  marginBottom: 3,
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: colors.neutral.lightGray,
+                    },
+                    "&:hover fieldset": {
                       borderColor: colors.primary.main,
-                      color: colors.primary.main,
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: colors.primary.light,
-                      },
-                    }}
-                  >
-                    Conectar
-                  </Button>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.primary.main,
+                    },
+                  },
+                }}
+              />
+              <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: colors.accent.orange,
+                    color: "#fff",
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      backgroundColor: colors.accent.orangeHover,
+                    },
+                  }}
+                  onClick={sendMessage}
+                >
+                 Enviar
+                </Button>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    color: colors.primary.main,
+                    textTransform: "none",
+                  }}
+                  onClick={() => setIsModalMessageOpen(false)}
+                >
+                  Cancelar
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
-      </Box>
+      </Modal>
     </Box>
   );
 };

@@ -4,60 +4,68 @@ import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { UserContext } from "./user.provider"; // Importar el contexto del usuario
 
 export const PublicationsContext = createContext({
-  publications: [], // Todas las publicaciones
-  fiveFirst: [], // Primeras 5 publicaciones recomendadas
-  userPublications: [], // Publicaciones del usuario logueado
-  contactPublications: [], // Publicaciones de un contacto
+  publications: [],
+  favPublications:[],
+  fiveFirst: [],
+  userPublications: [],
+  contactPublications: [],
   selectedPublication: null,
   selectPublication: () => {},
   clearSelection: () => {},
   loadContactPublications: async () => {},
+  reloadPublications: async () => {}, // Nueva función añadida
   isLoading: true,
 });
 
 const PublicationsProvider = ({ children }) => {
   const { user } = useContext(UserContext);
-  const [publications, setPublications] = useState([]); 
+  const [publications, setPublications] = useState([]);
+  const [favPublications, setFavPublications] = useState([]);
+
   const [fiveFirst, setFiveFirst] = useState([]);
-  const [userPublications, setUserPublications] = useState([]); 
-  const [contactPublications, setContactPublications] = useState([]); 
+  const [userPublications, setUserPublications] = useState([]);
+  const [contactPublications, setContactPublications] = useState([]);
   const [selectedPublication, setSelectedPublication] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchPublicationsFromFirestore = async () => {
+    const publicationsRef = collection(db, "publicacion");
+    const publicationsQuery = query(
+      publicationsRef,
+      orderBy("fechaDeCreacion", "desc")
+    );
+    const snapshot = await getDocs(publicationsQuery);
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  };
+
+  // Cargar publicaciones desde Firestore al montar el componente
   useEffect(() => {
     const fetchPublications = async () => {
       try {
-        setIsLoading(true); // Inicia la carga
-        const publicationsRef = collection(db, "publicacion");
-        const publicationsQuery = query(
-          publicationsRef,
-          orderBy("fechaDeCreacion", "desc") // Ordenar por fecha de creación
-        );
-  
-        const snapshot = await getDocs(publicationsQuery);
-  
-        // Transformar los datos en un array
-        const fetchedPublications = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-  
-        setPublications(fetchedPublications); // Guardar todas las publicaciones
-  
-        // Generar las 5 primeras recomendaciones basadas en categorías del usuario
+        setIsLoading(true);
+        const fetchedPublications = await fetchPublicationsFromFirestore();
+
+        setPublications(fetchedPublications);
+
+        // Actualizar `fiveFirst` basado en los servicios del usuario
         if (user?.servicios && Array.isArray(user.servicios)) {
           const recommended = fetchedPublications.filter((pub) =>
             pub.categorias?.some((servicio) => user.servicios.includes(servicio))
           );
-          setFiveFirst(recommended.slice(0, 4)); // Tomar solo las primeras 5
+          setFavPublications(recommended),
+          setFiveFirst(recommended.slice(0, 2)); // Tomar solo las primeras 5
         } else {
-          setFiveFirst([]); // Si no hay categorías, el array queda vacío
+          setFiveFirst([]);
         }
-  
+
         // Publicaciones creadas por el usuario logueado
         if (user?.uid) {
           const userCreated = fetchedPublications.filter(
-            (pub) => pub.autor?.uid === user.uid // Filtrar por `autor.uid`
+            (pub) => pub.autor?.uid === user.uid
           );
           setUserPublications(userCreated);
         } else {
@@ -65,17 +73,47 @@ const PublicationsProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Error al obtener publicaciones desde Firestore:", error.message);
-        setPublications([]); // Reinicia publicaciones en caso de error
+        setPublications([]);
         setFiveFirst([]);
         setUserPublications([]);
       } finally {
-        setIsLoading(false); // Finaliza la carga
+        setIsLoading(false);
       }
     };
-  
+
     fetchPublications();
-  }, [user]); // Dependencia: Reejecutar cuando cambie el usuario
-  
+  }, [user]);
+
+  // Recargar publicaciones desde Firestore
+  const reloadPublications = async () => {
+    try {
+      setIsLoading(true);
+      const fetchedPublications = await fetchPublicationsFromFirestore();
+
+      setPublications(fetchedPublications);
+
+      // Actualizar `fiveFirst` basado en los servicios del usuario
+      if (user?.servicios && Array.isArray(user.servicios)) {
+        const recommended = fetchedPublications.filter((pub) =>
+          pub.categorias?.some((servicio) => user.servicios.includes(servicio))
+        );
+        setFiveFirst(recommended.slice(0, 4));
+      }
+
+      // Publicaciones creadas por el usuario logueado
+      if (user?.uid) {
+        const userCreated = fetchedPublications.filter(
+          (pub) => pub.autor?.uid === user.uid
+        );
+        setUserPublications(userCreated);
+      }
+    } catch (error) {
+      console.error("Error al recargar publicaciones desde Firestore:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Cargar publicaciones de un contacto por su ID
   const loadContactPublications = async (contactId) => {
     if (!contactId) return;
@@ -121,6 +159,7 @@ const PublicationsProvider = ({ children }) => {
     <PublicationsContext.Provider
       value={{
         publications,
+        favPublications,
         fiveFirst,
         userPublications,
         contactPublications,
@@ -128,6 +167,7 @@ const PublicationsProvider = ({ children }) => {
         selectPublication,
         clearSelection,
         loadContactPublications,
+        reloadPublications, // Incluir la función en el contexto
         isLoading,
       }}
     >

@@ -27,6 +27,7 @@ const ProfileView = () => {
   const [openModal, setOpenModal] = useState(false);
   const contactId=user.uid;
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     if (!user) {
       setOpenModal(true); // Mostrar el modal si no hay usuario
     }
@@ -316,7 +317,7 @@ const ProfileView = () => {
                       },
                     }}
                   >
-                    Conectar
+                    Editar
                   </Button>
                 </ListItem>
               ))}

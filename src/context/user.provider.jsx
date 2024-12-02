@@ -14,6 +14,7 @@ export const UserContext = createContext({
   loading: true,
   login: async (email, password) => {},
   logout: async () => {},
+  reloadUser: async () => {}, // Añadimos la función al contexto
 });
 
 const UserProvider = ({ children }) => {
@@ -21,14 +22,13 @@ const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   // Fetch user data from Firestore
-  const fetchUserFromFirestore = async (email) => {
+  const fetchUserFromFirestore = async (uid) => {
     try {
-      const userRef = collection(db, "usuario");
-      const q = query(userRef, where("correo", "==", email));
-      const querySnapshot = await getDocs(q);
+      const userDoc = doc(db, "usuario", uid);
+      const userSnapshot = await getDoc(userDoc);
 
-      if (!querySnapshot.empty) {
-        return querySnapshot.docs[0].data();
+      if (userSnapshot.exists()) {
+        return userSnapshot.data();
       } else {
         console.error("No se encontró información del usuario en Firestore.");
         return null;
@@ -39,17 +39,44 @@ const UserProvider = ({ children }) => {
     }
   };
 
+  // Reload user function
+  const reloadUser = async () => {
+    if (!user?.uid) {
+      console.error("No hay un usuario autenticado para recargar.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatedUserData = await fetchUserFromFirestore(user.uid);
+      if (updatedUserData) {
+        setUser({
+          ...updatedUserData,
+          uid: user.uid,
+          email: user.email, // Preservamos el email del usuario
+        });
+      } else {
+        console.error("Error al recargar el usuario.");
+      }
+    } catch (error) {
+      console.error("Error al recargar el usuario:", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Login function
   const login = async (email, password) => {
     setLoading(true);
     try {
       const { user: firebaseUser } = await signInWithEmailAndPassword(auth, email, password);
-      const userData = await fetchUserFromFirestore(firebaseUser.email);
+      const userData = await fetchUserFromFirestore(firebaseUser.uid);
 
       if (userData) {
         setUser({
           ...userData,
           uid: firebaseUser.uid,
+          email: firebaseUser.email,
         });
       } else {
         console.error("No se pudo cargar la información del usuario.");
@@ -61,18 +88,17 @@ const UserProvider = ({ children }) => {
       setLoading(false);
     }
   };
+
+  // Login for creation function
   const loginForCreation = async (email) => {
     setLoading(true);
     try {
-      // Busca al usuario directamente en Firestore por correo electrónico
       const userRef = collection(db, "usuario");
       const q = query(userRef, where("correo", "==", email));
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
-        // Obtén los datos del usuario del primer documento encontrado
         const userData = querySnapshot.docs[0].data();
-        
         setUser({
           ...userData,
         });
@@ -85,7 +111,6 @@ const UserProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
 
   // Logout function
   const logout = async () => {
@@ -103,7 +128,7 @@ const UserProvider = ({ children }) => {
       setLoading(true);
 
       if (currentUser) {
-        const userData = await fetchUserFromFirestore(currentUser.email);
+        const userData = await fetchUserFromFirestore(currentUser.uid);
         if (userData) {
           setUser({
             ...userData,
@@ -125,7 +150,7 @@ const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading,loginForCreation, login, logout }}>
+    <UserContext.Provider value={{ user, loading, loginForCreation, login, logout, reloadUser }}>
       {children}
     </UserContext.Provider>
   );

@@ -18,7 +18,7 @@ import { PublicationsContext } from "../../../context/publication.provider";
 const Explore = () => {
   const [availableCategories, setAvailableCategories] = useState([]);
   const [recommendedServices, setRecommendedServices] = useState([]);
-  const { publications, isLoading, fiveFirst } =
+  const { favPublications, isLoading, fiveFirst } =
     useContext(PublicationsContext);
   const [serviceProviders, setServiceProviders] = useState([]);
   const [selectedPublication, setSelectedPublication] = useState(null); // Estado para el modal
@@ -37,6 +37,7 @@ const Explore = () => {
 
   // Obtener categorías desde Firestore
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     const fetchCategories = async () => {
       try {
         const docRef = doc(db, "config", configDocumentId);
@@ -201,7 +202,7 @@ const Explore = () => {
           justifyContent: "space-between",
         }}
       >
-        {publications.map((service) => (
+        {favPublications.map((service) => (
           <Box
             key={service.id}
             sx={{

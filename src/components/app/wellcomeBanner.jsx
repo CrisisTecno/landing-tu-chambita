@@ -2,8 +2,10 @@ import React from "react";
 import { Box, Typography, Button, Grid } from "@mui/material";
 import colors from "../../theme/colors"; // Asegúrate de usar tu paleta de colores personalizada.
 import tuchambitaMascot from "../../../public/assets/imgs/img104.png"; // Reemplaza con la ruta de tu imagen
+import { useNavigate } from "react-router-dom";
 
 const WelcomeBanner = () => {
+  const navigate =useNavigate();
   return (
     <Box
       sx={{
@@ -69,6 +71,7 @@ const WelcomeBanner = () => {
                 backgroundColor: colors.primary.light,
               },
             }}
+            onClick={() => navigate(`/explore`)} 
           >
             Explorar Categorías
           </Button>

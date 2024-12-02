@@ -12,14 +12,15 @@ import PublicationCard from "./publishCard"; // Componente individual de publica
 import { PublicationsContext } from "../../../../context/publication.provider"; // Contexto de publicaciones
 import colors from "../../../../theme/colors";
 import { useNavigate } from "react-router-dom";
+import { UserContext } from "../../../../context/user.provider";
 
 const PublicationsList2 = () => {
+  const {user}=useContext(UserContext);
   const navigate= useNavigate();
   const { publications, isLoading } = useContext(PublicationsContext);
-  const [selectedPublication, setSelectedPublication] = useState(null); // Publicación seleccionada para mostrar en el modal
-  const [isModalOpen, setIsModalOpen] = useState(false); // Estado del modal
+  const [selectedPublication, setSelectedPublication] = useState(null); 
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
-  // Funciones para abrir y cerrar el modal
   const handleOpenModal = (publication) => {
     setSelectedPublication(publication);
     setIsModalOpen(true);
@@ -123,10 +124,20 @@ const PublicationsList2 = () => {
                   sx={{ width: 60, height: 60 }}
                 />
                 <Box>
-                  <Typography
+                <Typography
                     variant="h6"
-                    sx={{ fontWeight: "bold", color: "#000",cursor:"pointer" }}
-                    onClick={() => navigate(`/profilex/${selectedPublication.autor?.uid}`)} 
+                    sx={{
+                      fontWeight: "bold",
+                      color: "#000",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      if (selectedPublication.autor?.uid === user?.uid) {
+                        navigate("/profile"); // Redirige al perfil del usuario logueado
+                      } else {
+                        navigate(`/profilex/${selectedPublication.autor?.uid}`); // Redirige al perfil de un contacto
+                      }
+                    }}
                   >
                     {selectedPublication.autor?.nombre || "Usuario Desconocido"}
                   </Typography>

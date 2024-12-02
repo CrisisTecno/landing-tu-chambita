@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
 } from "@mui/material";
@@ -10,6 +10,10 @@ import MessagingSection from "./sections/mensajeriaSection";
 import ChatPopup from "./components/chatpopup";
 
 const Dashboard = () => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+  
   return (
     <Box
       sx={{

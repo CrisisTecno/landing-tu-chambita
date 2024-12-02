@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
@@ -26,18 +27,12 @@ import ContactsIcon from "@mui/icons-material/Contacts";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MessageIcon from "@mui/icons-material/Message";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SidebarOption from "./slider"; // Este es tu componente de SidebarOption
+import SidebarOption from "./slider";
 import { useNavigate, useLocation } from "react-router-dom";
 import colors from "../../theme/colors";
 import { UserContext } from "../../../src/context/user.provider";
-
-const userList = [
-  { id: 1, name: "Danny Tito Fernandez", profession: "Plomero" },
-  { id: 2, name: "Dani Hiller", profession: "Electricista" },
-  { id: 3, name: "David Garnica", profession: "Carpintero" },
-  { id: 4, name: "Dilan S. Quiñonez", profession: "Albañil" },
-  { id: 5, name: "Daniel Roca Martínez", profession: "Pintor" },
-];
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../firebase"; // Configuración de Firebase
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -80,26 +75,42 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 const Navbar = () => {
   const { logout } = useContext(UserContext);
   const navigate = useNavigate();
-  const location = useLocation(); // Hook para obtener la ruta actual
+  const location = useLocation();
   const [activePath, setActivePath] = useState(location.pathname);
 
   const [searchValue, setSearchValue] = useState("");
   const [filteredResults, setFilteredResults] = useState([]);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isSearching, setIsSearching] = useState(false); // Estado de carga para la búsqueda
 
   useEffect(() => {
     setActivePath(location.pathname);
   }, [location]);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = async (e) => {
     const value = e.target.value;
     setSearchValue(value);
 
-    if (value) {
-      const results = userList.filter((user) =>
-        user.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredResults(results);
+    if (value.trim()) {
+      setIsSearching(true);
+
+      try {
+        // Consulta para buscar usuarios por nombre
+        const usersRef = collection(db, "usuario");
+        const usersQuery = query(usersRef, where("nombre", ">=", value), where("nombre", "<=", value + "\uf8ff"));
+        const querySnapshot = await getDocs(usersQuery);
+
+        // Mapeo de los resultados de la búsqueda
+        const results = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFilteredResults(results);
+      } catch (error) {
+        console.error("Error al buscar usuarios:", error);
+      } finally {
+        setIsSearching(false);
+      }
     } else {
       setFilteredResults([]);
     }
@@ -125,9 +136,9 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await logout(); // Llama a la función de cerrar sesión
-      handleMenuClose(); // Cierra el menú
-      setShowLogoutDialog(true); // Abre el cuadro de diálogo de despedida
+      await logout();
+      handleMenuClose();
+      setShowLogoutDialog(true);
     } catch (error) {
       console.error("Error al cerrar sesión:", error.message);
     }
@@ -135,7 +146,7 @@ const Navbar = () => {
 
   const closeLogoutDialog = () => {
     setShowLogoutDialog(false);
-    navigate("/"); // Redirige a la página de inicio
+    navigate("/");
   };
 
   const isMenuOpen = Boolean(anchorEl);
@@ -188,7 +199,7 @@ const Navbar = () => {
             onClick={goToDashboard}
           >
             <img
-              src="/assets/logo.png" // Reemplazar con el logo de TuChambita
+              src="/assets/logo.png"
               alt="Logo TuChambita"
               style={{ width: "40px", height: "40px", borderRadius: "50%" }}
             />
@@ -203,35 +214,53 @@ const Navbar = () => {
           </Box>
 
           <Search>
-            {filteredResults.length > 0 && (
-              <Box
+            {isSearching ? (
+              <CircularProgress
                 sx={{
                   position: "absolute",
-                  top: "60px",
-                  left: "100%",
-                  transform: "translateX(-50%)",
-                  backgroundColor: "#fff",
-                  borderRadius: "8px",
-                  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-                  width: "20vw",
-                  maxWidth: "50vw",
-                  zIndex: 1000,
+                  left: "50%",
+                  top: "50%",
+                  transform: "translate(-50%, -50%)",
                 }}
-              >
-                <List>
-                  {filteredResults.map((user) => (
-                    <ListItem key={user.id}>
-                      <ListItemAvatar>
-                        <Avatar>{user.name.charAt(0)}</Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={user.name}
-                        secondary={user.profession}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
+                size={24}
+              />
+            ) : (
+              filteredResults.length > 0 && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "60px",
+                    left: "100%",
+                    transform: "translateX(-50%)",
+                    backgroundColor: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+                    width: "20vw",
+                    maxWidth: "50vw",
+                    zIndex: 1000,
+                  }}
+                >
+                  <List>
+                    {filteredResults.map((user) => (
+                      <ListItem
+                        key={user.id}
+                        onClick={() => navigate(`/profilex/${user.id}`)} // Redirige al perfil del usuario
+                        sx={{ cursor: "pointer", "&:hover": { backgroundColor: "#f5f5f5" } }}
+                      >
+                        <ListItemAvatar>
+                          <Avatar src={user.profilePicture || ""}>
+                            {user.nombre?.charAt(0).toUpperCase()}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={user.nombre}
+                          secondary={user.profession || "Usuario"}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              )
             )}
             <SearchIconWrapper>
               <SearchIcon />
@@ -239,7 +268,7 @@ const Navbar = () => {
             <StyledInputBase
               value={searchValue}
               onChange={handleSearchChange}
-              placeholder="Buscar…"
+              placeholder="Buscar usuarios…"
               style={{ background: "#fff", fontWeight: "bold" }}
               inputProps={{ "aria-label": "search" }}
             />
@@ -250,7 +279,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<HomeIcon />}
               label="Inicio"
-              activate={activePath == "/dashboard"}
+              activate={activePath === "/dashboard"}
               onclick={() => {
                 navigate("/dashboard");
               }}
@@ -258,7 +287,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<ExploreIcon />}
               label="Explorar"
-              activate={activePath == "/explore"}
+              activate={activePath === "/explore"}
               onclick={() => {
                 navigate("/explore");
               }}
@@ -266,7 +295,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<MessageIcon />}
               label="Mensajes"
-              activate={activePath == "/messages"}
+              activate={activePath === "/messages"}
               onclick={() => {
                 navigate("/messages");
               }}
@@ -274,7 +303,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<ContactsIcon />}
               label="Mis Contactos"
-              activate={activePath == "/contacts"}
+              activate={activePath === "/contacts"}
               onclick={() => {
                 navigate("/contacts");
               }}
@@ -282,7 +311,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<NotificationsIcon />}
               label="Notificaciones"
-              activate={activePath == "/notifications"}
+              activate={activePath === "/notifications"}
               onclick={() => {
                 navigate("/notifications");
               }}
@@ -294,7 +323,7 @@ const Navbar = () => {
             <SidebarOption
               icon={<AccountCircleIcon />}
               label="Yo"
-              activate={activePath == "/profile"}
+              activate={activePath === "/profile"}
               onclick={handleProfileMenuOpen}
             />
           </Box>
@@ -306,59 +335,58 @@ const Navbar = () => {
 
       {/* Cuadro de diálogo de despedida */}
       <Dialog
-  open={showLogoutDialog}
-  onClose={closeLogoutDialog}
-  PaperProps={{
-    sx: {
-      padding: 3, // Padding interno para el contenido del diálogo
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center", // Centra el contenido horizontalmente
-      justifyContent: "center", // Centra el contenido verticalmente
-      textAlign: "center", // Asegura que todo el texto esté centrado
-    },
-  }}
->
-  <DialogContent>
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: "bold",
-        color: colors.accent.orange,
-        marginBottom: 1, // Espaciado entre las líneas
-      }}
-    >
-      ¡Gracias por usar TuChambita!
-    </Typography>
-    <Typography
-      variant="body1"
-      sx={{
-        color: colors.neutral.darkGray,
-        marginBottom: 1,
-      }}
-    >
-      Esperamos verte pronto nuevamente.
-    </Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button
-      onClick={closeLogoutDialog}
-      sx={{
-        backgroundColor: colors.accent.orange,
-        color: "#fff",
-        paddingLeft:"3vw",
-        paddingRight:"3vw",
-        borderRadius:"2vw",
-        textTransform: "none",
-        fontWeight: "bold",
-        "&:hover": { backgroundColor: colors.accent.orangeHover },
-      }}
-    >
-      Bye Bye
-    </Button>
-  </DialogActions>
-</Dialog>
-
+        open={showLogoutDialog}
+        onClose={closeLogoutDialog}
+        PaperProps={{
+          sx: {
+            padding: 3,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+          },
+        }}
+      >
+        <DialogContent>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "bold",
+              color: colors.accent.orange,
+              marginBottom: 1,
+            }}
+          >
+            ¡Gracias por usar TuChambita!
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: colors.neutral.darkGray,
+              marginBottom: 1,
+            }}
+          >
+            Esperamos verte pronto nuevamente.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={closeLogoutDialog}
+            sx={{
+              backgroundColor: colors.accent.orange,
+              color: "#fff",
+              paddingLeft: "3vw",
+              paddingRight: "3vw",
+              borderRadius: "2vw",
+              textTransform: "none",
+              fontWeight: "bold",
+              "&:hover": { backgroundColor: colors.accent.orangeHover },
+            }}
+          >
+            Bye Bye
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

@@ -10,7 +10,7 @@ import {
   Avatar,
   Chip,
   Dialog,
-  DialogContent,
+  DialogContent, CircularProgress,
   DialogActions,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
@@ -18,10 +18,18 @@ import ArticleIcon from "@mui/icons-material/Article";
 import CloseIcon from "@mui/icons-material/Close";
 import colors from "../../theme/colors";
 import { db } from "../../firebase"; // Firebase configuration
-import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 import { configDocumentId } from "../../config/config";
+import { PublicationsContext } from "../../context/publication.provider";
 
 const CreatePost = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useContext(UserContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [postContent, setPostContent] = useState("");
@@ -35,6 +43,7 @@ const CreatePost = () => {
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const { reloadPublications } = useContext(PublicationsContext);
 
   const openDialog = (message) => {
     setDialogMessage(message);
@@ -56,10 +65,15 @@ const CreatePost = () => {
           const data = docSnap.data();
           setAvailableCategories(data.categorias || []);
         } else {
-          console.error("El documento de configuración no existe en Firestore.");
+          console.error(
+            "El documento de configuración no existe en Firestore."
+          );
         }
       } catch (e) {
-        console.error("Error al obtener categorías desde Firestore:", e.message);
+        console.error(
+          "Error al obtener categorías desde Firestore:",
+          e.message
+        );
       }
     };
 
@@ -67,10 +81,11 @@ const CreatePost = () => {
   }, []);
 
   const handleChipClick = (category) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category) // Quita la categoría si ya está seleccionada
-        : [...prev, category] // Agrega la categoría si no está seleccionada
+    setSelectedCategories(
+      (prev) =>
+        prev.includes(category)
+          ? prev.filter((c) => c !== category) 
+          : [...prev, category] 
     );
   };
 
@@ -91,6 +106,7 @@ const CreatePost = () => {
     }
 
     try {
+      setIsLoading(true);
       const docRef = await addDoc(collection(db, "publicacion"), {
         contenido: postContent,
         categorias: selectedCategories,
@@ -99,19 +115,20 @@ const CreatePost = () => {
         autor: {
           avatar: user?.profileId,
           nombre: user?.nombre || "Usuario desconocido",
-          calificacion:user?.calificacion||0,
-          totalVistas:user?.totalVistas||0,
+          calificacion: user?.calificacion || 0,
+          totalVistas: user?.totalVistas || 0,
           rol: user?.rol || "usuario",
           uid: user?.uid || "UID desconocido",
         },
       });
-
-   
+await reloadPublications();
+      console.log("Publicación creada con ID:", docRef.id);
       openDialog("¡Publicación creada exitosamente!");
-      setPostContent(""); // Limpia el contenido después de publicar
-      setSelectedCategories([]); // Limpia las categorías seleccionadas
-      setLocation(""); // Limpia la ubicación
-      handleCloseModal(); // Cierra el modal
+      setPostContent(""); 
+      setSelectedCategories([]); 
+      setLocation(""); 
+      handleCloseModal(); 
+      setIsLoading(false);
     } catch (error) {
       console.error("Error al crear publicación:", error.message);
       openDialog("Error al crear publicación. Inténtalo más tarde.");
@@ -184,10 +201,16 @@ const CreatePost = () => {
                 sx={{ width: 40, height: 40 }}
               />
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: "bold", color: "#000" }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: "bold", color: "#000" }}
+                >
                   {user?.nombre || "Usuario desconocido"}
                 </Typography>
-                <Typography variant="body2" sx={{ color: colors.neutral.darkGray }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: colors.neutral.darkGray }}
+                >
                   {user?.rol || "Rol desconocido"}
                 </Typography>
               </Box>
@@ -197,29 +220,7 @@ const CreatePost = () => {
             </IconButton>
           </Box>
 
-          {/* Campo para escribir publicación */}
-          <TextField
-            fullWidth
-            label="Ubicación"
-            placeholder="Ejemplo: La Paz, Bolivia"
-            variant="outlined"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            sx={{
-              marginBottom: 3,
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: colors.neutral.lightGray,
-                },
-                "&:hover fieldset": {
-                  borderColor: colors.primary.main,
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: colors.primary.main,
-                },
-              },
-            }}
-          />
+          
           <TextField
             fullWidth
             multiline
@@ -243,9 +244,33 @@ const CreatePost = () => {
               },
             }}
           />
-
+{/* Campo para escribir publicación */}
+<TextField
+            fullWidth
+            label="Ubicación"
+            placeholder="Ejemplo: La Paz, Bolivia"
+            variant="outlined"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            sx={{
+              marginBottom: 3,
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: colors.neutral.lightGray,
+                },
+                "&:hover fieldset": {
+                  borderColor: colors.primary.main,
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: colors.primary.main,
+                },
+              },
+            }}
+          />
           {/* Chips de categorías */}
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, marginBottom: 3 }}>
+          <Box
+            sx={{ display: "flex", flexWrap: "wrap", gap: 1, marginBottom: 3 }}
+          >
             {availableCategories.map((category) => (
               <Box
                 key={category}
@@ -257,7 +282,9 @@ const CreatePost = () => {
                   backgroundColor: selectedCategories.includes(category)
                     ? colors.accent.orange
                     : colors.neutral.lightGray,
-                  color: selectedCategories.includes(category) ? "#fff" : colors.neutral.darkGray,
+                  color: selectedCategories.includes(category)
+                    ? "#fff"
+                    : colors.neutral.darkGray,
                   fontWeight: "bold",
                   "&:hover": {
                     backgroundColor: selectedCategories.includes(category)
@@ -272,84 +299,89 @@ const CreatePost = () => {
           </Box>
 
           {/* Botón para publicar */}
+          
           <Button
             fullWidth
             variant="contained"
             onClick={handlePublish}
+            disabled={isLoading} 
             sx={{
               textTransform: "none",
               fontWeight: "bold",
-              backgroundColor: colors.accent.orange,
               color: "#fff",
+              backgroundColor: colors.accent.orange,
               "&:hover": { backgroundColor: colors.accent.orangeHover },
             }}
           >
-            Publicar
+            {isLoading ? (
+              <CircularProgress size={24} sx={{ color: "#fff" }} />
+            ) : (
+              "Publicar"
+            )}
           </Button>
         </Box>
       </Modal>
 
       {/* Dialog para mensajes de éxito o error */}
       <Dialog
-  open={isDialogOpen}
-  onClose={closeDialog}
-  sx={{
-    "& .MuiPaper-root": {
-      borderRadius: "16px",
-      padding: "30px 20px", // Espaciado general para el diálogo
-      textAlign: "center",
-      maxWidth: "400px", // Ancho máximo
-      margin: "0 auto", // Centrado
-    },
-  }}
->
-  <DialogContent>
-    <Typography
-      variant="h5"
-      sx={{
-        fontWeight: "bold",
-        color: dialogMessage.includes("exitosamente")
-          ? colors.primary.main
-          : colors.accent.orange,
-        marginBottom: 3, // Más espacio debajo del título
-      }}
-    >
-      {dialogMessage.includes("exitosamente") ? "¡Éxito!" : "¡Error!"}
-    </Typography>
-    <Typography
-      variant="body1"
-      sx={{
-        color: colors.neutral.darkGray,
-        marginBottom: 3, // Espaciado debajo del mensaje
-        lineHeight: 1.5, // Mejora la legibilidad
-      }}
-    >
-      {dialogMessage}
-    </Typography>
-  </DialogContent>
-  <DialogActions
-    sx={{
-      justifyContent: "center", 
-      marginTop: -2, 
-    }}
-  >
-    <Button
-      onClick={closeDialog}
-      sx={{
-        backgroundColor: colors.accent.orange,
-        color: "#fff",
-        fontWeight: "bold",
-        textTransform: "none",
-        padding: "10px 20px",
-        borderRadius: "8px",
-        "&:hover": { backgroundColor: colors.accent.orangeHover },
-      }}
-    >
-      Cerrar
-    </Button>
-  </DialogActions>
-</Dialog>
-
+        open={isDialogOpen}
+        onClose={closeDialog}
+        sx={{
+          "& .MuiPaper-root": {
+            borderRadius: "16px",
+            padding: "30px 20px", // Espaciado general para el diálogo
+            textAlign: "center",
+            maxWidth: "400px", // Ancho máximo
+            margin: "0 auto", // Centrado
+          },
+        }}
+      >
+        <DialogContent>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              color: dialogMessage.includes("exitosamente")
+                ? colors.primary.main
+                : colors.accent.orange,
+              marginBottom: 3, // Más espacio debajo del título
+            }}
+          >
+            {dialogMessage.includes("exitosamente") ? "¡Éxito!" : "¡Error!"}
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: colors.neutral.darkGray,
+              marginBottom: 3, // Espaciado debajo del mensaje
+              lineHeight: 1.5, // Mejora la legibilidad
+            }}
+          >
+            {dialogMessage}
+          </Typography>
+        </DialogContent>
+        <DialogActions
+          sx={{
+            justifyContent: "center",
+            marginTop: -2,
+          }}
+        >
+          <Button
+            onClick={closeDialog}
+            sx={{
+              backgroundColor: colors.accent.orange,
+              color: "#fff",
+              fontWeight: "bold",
+              textTransform: "none",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              "&:hover": { backgroundColor: colors.accent.orangeHover },
+            }}
+          >
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
