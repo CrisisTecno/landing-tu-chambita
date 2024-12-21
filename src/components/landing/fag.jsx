@@ -10,6 +10,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import colors from "../../theme/colors"; // Asegúrate de que tienes este archivo
 
 const FAQ = () => {
+
+  
   const faqData = [
     {
       question: "¿Qué servicios ofrece TuChambita?",
