@@ -13,7 +13,7 @@ export const PublicationsContext = createContext({
   selectPublication: () => {},
   clearSelection: () => {},
   loadContactPublications: async () => {},
-  reloadPublications: async () => {}, // Nueva función añadida
+  reloadPublications: async () => {}, 
   isLoading: true,
 });
 

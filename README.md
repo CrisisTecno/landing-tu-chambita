@@ -12,6 +12,28 @@ TuChambita es un marketplace que simplifica la búsqueda de servicios profesiona
 Porque sabemos que todos tienen una chambita que puede hacer la diferencia.
 
 ---
+<p align="center">
+  <img src="assets/readme/cc1.png" alt="Mockup 1" width="50%" />
+  <img src="assets/readme/cc2.png" alt="Mockup 2" width="50%" />
+</p>
+<p align="center">
+  <img src="assets/readme/cc4.png" alt="Mockup 1" width="50%" />
+  <img src="assets/readme/cc5.png" alt="Mockup 2" width="50%" />
+</p>
+<p align="center">
+  <img src="assets/readme/cc6.png" alt="Mockup 1" width="50%" />
+  <img src="assets/readme/cc7.png" alt="Mockup 2" width="50%" />
+</p>
+<p align="center">
+  <img src="assets/readme/cc8.png" alt="Mockup 1" width="50%" />
+  <img src="assets/readme/cc9.png" alt="Mockup 2" width="50%" />
+</p>
+<p align="center">
+  <img src="assets/readme/cc0.png" alt="Mockup 1" width="50%" />
+  <img src="assets/readme/cc4.png" alt="Mockup 2" width="50%" />
+</p>
+
+---
 
 ## 🛠️ Funcionalidades Clave
 ### 🔍 Encuentra lo que necesitas
